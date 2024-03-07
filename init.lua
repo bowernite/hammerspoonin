@@ -1,5 +1,17 @@
 hs.console.clearConsole()
 
+-- Utility function to format screen dimensions
+local function formatScreenDimensions(screen)
+    local screenFrame = screen:frame()
+    return string.format("%s (Dimensions: w=%d, h=%d)", screen:name(), screenFrame.w, screenFrame.h)
+end
+
+-- Utility function to format window dimensions and coordinates
+local function formatWindowDimensions(window)
+    local windowFrame = window:frame()
+    return string.format("%s (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", window:application():name(), windowFrame.w, windowFrame.h, windowFrame.x, windowFrame.y)
+end
+
 -- Modified Emoji log function
 function emojiLog(message, oldScreen, currentScreen, window)
     if window and window:application():name() ~= "Clock" then
@@ -7,19 +19,13 @@ function emojiLog(message, oldScreen, currentScreen, window)
     end
     local logMessage = "\n🔍 " .. message
     if oldScreen then
-        local oldScreenName = oldScreen:name()
-        local oldScreenFrame = oldScreen:frame()
-        logMessage = logMessage .. string.format(" | Old Screen: %s (Dimensions: w=%d, h=%d)", oldScreenName, oldScreenFrame.w, oldScreenFrame.h)
+        logMessage = logMessage .. " | Old Screen: " .. formatScreenDimensions(oldScreen)
     end
     if currentScreen then
-        local currentScreenName = currentScreen:name()
-        local currentScreenFrame = currentScreen:frame()
-        logMessage = logMessage .. string.format(" | Current Screen: %s (Dimensions: w=%d, h=%d)", currentScreenName, currentScreenFrame.w, currentScreenFrame.h)
+        logMessage = logMessage .. " | Current Screen: " .. formatScreenDimensions(currentScreen)
     end
     if window then
-        local appName = window:application():name()
-        local windowFrame = window:frame()
-        logMessage = logMessage .. string.format(" | %s (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", appName, windowFrame.w, windowFrame.h, windowFrame.x, windowFrame.y)
+        logMessage = logMessage .. " | " .. formatWindowDimensions(window)
     end
     hs.console.printStyledtext(logMessage)
 end
@@ -34,88 +40,90 @@ function isWindowCentered(window)
     local windowFrame = window:frame()
     local screenFrame = window:screen():frame()
     -- Adjusting the window's coordinates relative to its current screen
-    local windowCenterX = windowFrame.x - screenFrame.x + (windowFrame.w / 2)
-    local windowCenterY = windowFrame.y - screenFrame.y + (windowFrame.h / 2)
-    local screenCenterX = screenFrame.w / 2
-    local screenCenterY = screenFrame.h / 2
-    local isCenteredHorizontally = math.abs(windowCenterX - screenCenterX) < 1
-    local isCenteredVertically = math.abs(windowCenterY - screenCenterY) < 1
-    emojiLog("Window Centered Check: Horizontal -> " .. tostring(isCenteredHorizontally) .. ", Vertical -> " .. tostring(isCenteredVertically), nil, window:screen(), window)
-    return isCenteredHorizontally and isCenteredVertically
+    local windowCenter = {x = windowFrame.x - screenFrame.x + windowFrame.w / 2, y = windowFrame.y - screenFrame.y + windowFrame.h / 2}
+    local screenCenter = {x = screenFrame.w / 2, y = screenFrame.h / 2}
+    local isCentered = math.abs(windowCenter.x - screenCenter.x) < 1 and math.abs(windowCenter.y - screenCenter.y) < 1
+    emojiLog("Window Centered Check: " .. tostring(isCentered), nil, window:screen(), window)
+    return isCentered
 end
 
 -- Function to update window screen map, screen dimensions, and centered windows
 function updateWindowScreenMapAndCenteredWindows()
     local allWindows = hs.window.allWindows()
     for _, window in ipairs(allWindows) do
-        local windowID = window:id()
-        local screen = window:screen()
-        local screenID = screen:id()
+        local windowID, screenID = window:id(), window:screen():id()
         windowScreenMap[windowID] = screenID
         -- Update screen dimensions
-        local screenFrame = screen:frame()
+        local screenFrame = window:screen():frame()
         screenDimensions[screenID] = {w = screenFrame.w, h = screenFrame.h}
         -- Update centered windows
         centeredWindows[windowID] = isWindowCentered(window)
     end
 end
 
--- Function to maximize window if moved to a new screen and was maximized
-function maximizeWindowOnNewScreen(window)
-    local windowID = window:id()
-    local currentScreen = window:screen()
-    local currentScreenID = currentScreen:id()
+-- Abstraction for finding the full screen object for the last screen a window was on
+local function findOldScreen(windowID)
     local previousScreenID = windowScreenMap[windowID]
     local oldScreen = hs.screen.find(previousScreenID)
-    local newScreen = hs.screen.find(currentScreenID)
+    if oldScreen then
+        emojiLog("Old screen found", oldScreen, nil, window)
+    else
+        emojiLog("Old screen not found", nil, nil, window)
+    end
+    return oldScreen
+end
+
+-- Abstraction for updating windowScreenMap for a specific window
+local function updateWindowScreenMap(windowID, currentScreenID)
+    emojiLog("Updating windowScreenMap for windowID: " .. tostring(windowID) .. " | New Screen ID: " .. tostring(currentScreenID), nil, nil, nil)
+    windowScreenMap[windowID] = currentScreenID
+end
+
+-- Function to maximize window if moved to a new screen and was maximized
+function maximizeWindowOnNewScreen(window)
+    local windowID, currentScreenID = window:id(), window:screen():id()
+    local oldScreen = findOldScreen(windowID)
     
-    if currentScreenID ~= previousScreenID then
-        local windowName = window:title()
-        local appName = window:application():name()
-        local oldScreenName = oldScreen and oldScreen:name() or "unknown"
-        local newScreenName = newScreen and newScreen:name() or "unknown"
-        emojiLog(appName .. " - " .. windowName .. " moved from " .. oldScreenName .. " to " .. newScreenName, oldScreen, newScreen, window)
-        local wasMaximized = screenDimensions[previousScreenID] and window:frame().w == screenDimensions[previousScreenID].w and window:frame().h == screenDimensions[previousScreenID].h
-        emojiLog("Was Maximized: " .. tostring(wasMaximized), oldScreen, newScreen, window)
+    if currentScreenID ~= windowScreenMap[windowID] then
+        local newScreen = hs.screen.find(currentScreenID)
+        emojiLog(window:application():name() .. " - " .. window:title() .. " moved", oldScreen, newScreen, window)
+        
+        local wasMaximized = screenDimensions[windowScreenMap[windowID]] and window:frame().w == screenDimensions[windowScreenMap[windowID]].w and window:frame().h == screenDimensions[windowScreenMap[windowID]].h
         if wasMaximized then
-            emojiLog(appName .. " - " .. windowName .. " was maximized on the previous screen, maximizing on the new screen", oldScreen, newScreen, window)
+            emojiLog("Was Maximized ✅")
             window:maximize(0) -- Pass 0 to disable animation
+            return
         end
         
         -- Check if the window was centered using the centeredWindows dictionary
-        local wasCentered = centeredWindows[windowID]
-        emojiLog("Was Centered: " .. tostring(wasCentered), oldScreen, newScreen, window)
-        
-        if wasCentered then
-            emojiLog(appName .. " - " .. windowName .. " was centered on the previous screen, centering on the new screen", oldScreen, newScreen, window)
-            local screenFrame = currentScreen:fullFrame()
-            local menuBarHeight = currentScreen:frame().y - screenFrame.y
-            window:setFrame({
-                x = screenFrame.x + (screenFrame.w - window:frame().w) / 2,
-                y = screenFrame.y + menuBarHeight + (screenFrame.h - menuBarHeight - window:frame().h) / 2,
-                w = window:frame().w,
-                h = window:frame().h
-            }, 0) -- Pass 0 to disable animation
+        if centeredWindows[windowID] then
+            emojiLog("Was Centered✅")
+            window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
             centeredWindows[windowID] = true
         end
     end
     -- Update the window's screen ID in the map and check if it's centered
-    windowScreenMap[windowID] = currentScreenID
+    updateWindowScreenMap(windowID, currentScreenID)
     centeredWindows[windowID] = isWindowCentered(window)
 end
 
 -- Watch for window events
 windowWatcher = hs.window.filter.new(nil)
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
-    local screen = window:screen()
-    emojiLog("Window created", nil, screen, window)
+    emojiLog("Window created", nil, window:screen(), window)
     updateWindowScreenMapAndCenteredWindows()
     maximizeWindowOnNewScreen(window)
 end)
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
-    local screen = window:screen()
-    emojiLog("Window moved", nil, screen, window)
+    emojiLog("Window moved", nil, window:screen(), window)
+
+    local windowID = window:id()
+    local oldScreen = findOldScreen(windowID)
+    emojiLog("Window moved", oldScreen, window:screen(), window)
     maximizeWindowOnNewScreen(window)
+
+    -- Update windowScreenMap when a window moves
+    updateWindowScreenMap(windowID, window:screen():id())
 end)
 
 -- Initialize
