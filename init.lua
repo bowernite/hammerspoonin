@@ -54,7 +54,7 @@ function maximizeWindowOnNewScreen(window)
         emojiLog("Was Maximized: " .. tostring(wasMaximized), nil, window)
         if wasMaximized then
             emojiLog(appName .. " - " .. windowName .. " was maximized on the previous screen, maximizing on the new screen", currentScreen, window)
-            window:maximize()
+            window:maximize(0) -- Pass 0 to disable animation
         end
     end
     -- Update the window's screen ID in the map
