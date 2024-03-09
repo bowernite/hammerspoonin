@@ -14,9 +14,6 @@ end
 
 -- Modified Emoji log function
 function emojiLog(message, oldScreen, currentScreen, window)
-    if window and window:application():name() ~= "Clock" then
-        return
-    end
     local logMessage = "\n🔍 " .. message
     if oldScreen then
         logMessage = logMessage .. " | Old Screen: " .. formatScreenDimensions(oldScreen)
@@ -79,6 +76,13 @@ local function updateWindowScreenMap(windowID, currentScreenID)
     windowScreenMap[windowID] = currentScreenID
 end
 
+function maximizeWindow(window)
+    emojiLog("Maximizing window for app: ", nil, nil, window)
+    
+    local screenFrame = window:screen():frame()
+    window:setFrame(screenFrame)
+end
+
 -- Function to maximize window if moved to a new screen and was maximized
 function maximizeWindowOnNewScreen(window)
     local windowID, currentScreenID = window:id(), window:screen():id()
@@ -91,7 +95,7 @@ function maximizeWindowOnNewScreen(window)
         local wasMaximized = screenDimensions[windowScreenMap[windowID]] and window:frame().w == screenDimensions[windowScreenMap[windowID]].w and window:frame().h == screenDimensions[windowScreenMap[windowID]].h
         if wasMaximized then
             emojiLog("Was Maximized ✅")
-            window:maximize(0) -- Pass 0 to disable animation
+            maximizeWindow(window)
             return
         end
         
@@ -111,8 +115,9 @@ end
 windowWatcher = hs.window.filter.new(nil)
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     emojiLog("Window created", nil, window:screen(), window)
-    updateWindowScreenMapAndCenteredWindows()
     maximizeWindowOnNewScreen(window)
+
+    updateWindowScreenMap(window:id(), window:screen():id())
 end)
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     emojiLog("Window moved", nil, window:screen(), window)
@@ -129,6 +134,16 @@ end)
 -- Initialize
 updateWindowScreenMapAndCenteredWindows()
 emojiLog("Hammerspoon initialized and window screen map updated")
+
+-- Maximize windows for specific apps
+-- WIP
+windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
+    local app = window:application():name()
+    emojiLog("Window created for app: " .. app)
+    if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or app == "Trello" then
+        maximizeWindow(window)
+    end
+end)
 
 -----------------------------------------------------------------------------------------------
 -- Check Ethernet and Toggle Wifi
