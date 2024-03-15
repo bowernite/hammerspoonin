@@ -114,12 +114,26 @@ end
 
 -- Watch for window events
 windowWatcher = hs.window.filter.new(nil)
+
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     log("Window created", {window, screen = window:screen()})
     maximizeWindowOnNewScreenIfNecessary(window)
 
     updateWindowScreenMap(window:id(), window:screen():id())
+
+    -- Maximize windows for specific apps
+    -- WIP
+    local app = window:application():name()
+    if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or
+        app == "Trello" then
+        if window:title() ~= "" then
+            maximizeWindow(window)
+        else
+            log("Skipped maximizing due to empty window title", {app})
+        end
+    end
 end)
+
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     local windowID = window:id()
     log("Window moved", {window, screen = window:screen()})
@@ -131,15 +145,6 @@ end)
 -- Initialize
 updateWindowStatus()
 log("Hammerspoon initialized and window screen map updated")
-
--- Maximize windows for specific apps
--- WIP
-windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
-    local app = window:application():name()
-    log("Window created", {window})
-    if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or
-        app == "Trello" then maximizeWindow(window) end
-end)
 
 -----------------------------------------------------------------------------------------------
 -- Check Ethernet and Toggle Wifi
