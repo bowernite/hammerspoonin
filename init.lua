@@ -87,6 +87,14 @@ function maximizeWindow(window)
     maximizedWindows[window:id()] = true
 end
 
+function centerWindowOnNewScreen(window)
+    
+    
+    log("Centering window", {window})
+    window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
+    centeredWindows[windowID] = true
+end
+
 -- Function to maximize window if moved to a new screen and was maximized
 function maximizeWindowOnNewScreenIfNecessary(window)
     local windowID, currentScreenID = window:id(), window:screen():id()
