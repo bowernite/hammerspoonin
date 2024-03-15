@@ -99,13 +99,19 @@ function maximizeWindowOnNewScreenIfNecessary(window)
             maximizeWindow(window)
             return
         end
+        
+        -- Just center all windows when they move screens
+        -- This will have to change if/when we start to do fancy proportional stuff, like with split windows and whatnot
+        log("Centering window", {window})
+        window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
+        centeredWindows[windowID] = true
 
         -- Check if the window was centered using the centeredWindows dictionary
-        if centeredWindows[windowID] then
-            log("Was Centered✅")
-            window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-            centeredWindows[windowID] = true
-        end
+        -- if centeredWindows[windowID] then
+        --     log("Was Centered✅")
+        --     window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
+        --     centeredWindows[windowID] = true
+        -- end
     end
 
     -- Update the window's screen ID in the map and check if it's centered
