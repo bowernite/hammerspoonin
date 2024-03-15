@@ -21,10 +21,10 @@ function log(message, details)
     if details then
         for key, value in pairs(details) do
             if type(value) == "userdata" and value:frame() then
-                if value and value:isScreen() then
+                if type(value.isScreen) == "function" and value:isScreen() then
                     logMessage = logMessage .. " | " .. key .. ": " ..
                                      formatScreenForLog(value)
-                elseif value and value:isWindow() then
+                elseif type(value.isWindow) == "function" and value:isWindow() then
                     logMessage = logMessage .. " | " .. key .. ": " ..
                                      formatWindowForLog(value)
                 end
@@ -37,8 +37,13 @@ function log(message, details)
     hs.console.printStyledtext(logMessage)
 end
 
+windowScreenMap = {}
 centeredWindows = {} -- Dictionary to keep track of centered windows
 maximizedWindows = {} -- Dictionary to keep track of maximized windows
+
+function updateWindowScreenMap(windowID, screenID)
+    windowScreenMap[windowID] = screenID
+end
 
 -- Function to check if a window is centered on its screen
 function isWindowCentered(window)
@@ -67,6 +72,7 @@ function updateWindowStatus()
         centeredWindows[windowID] = isWindowCentered(window)
 
         -- Update maximized windows
+        local screenFrame = window:screen():frame()
         maximizedWindows[windowID] = window:isFullScreen() or
                                          (window:frame().w == screenFrame.w and
                                              window:frame().h == screenFrame.h)
@@ -101,8 +107,8 @@ function maximizeWindowOnNewScreenIfNecessary(window)
             centeredWindows[windowID] = true
         end
     end
+
     -- Update the window's screen ID in the map and check if it's centered
-    updateWindowScreenMap(windowID, currentScreenID)
     centeredWindows[windowID] = isWindowCentered(window)
 end
 
@@ -116,13 +122,14 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
 end)
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     local windowID = window:id()
-    local oldScreen = findOldScreen(windowID)
-    log("Window moved", {window, screen = window:screen(), oldScreen})
+    log("Window moved", {window, screen = window:screen()})
     maximizeWindowOnNewScreenIfNecessary(window)
+
+    updateWindowScreenMap(window:id(), window:screen():id())
 end)
 
 -- Initialize
-updateWindowScreenMapAndCenteredWindows()
+updateWindowStatus()
 log("Hammerspoon initialized and window screen map updated")
 
 -- Maximize windows for specific apps
@@ -137,7 +144,6 @@ end)
 -----------------------------------------------------------------------------------------------
 -- Check Ethernet and Toggle Wifi
 -----------------------------------------------------------------------------------------------
-
 function networkChangedCallback()
     local ethernetInterface = "en6" -- Change to your Ethernet interface identifier
     local wifiInterface = "en0" -- Change to your WiFi interface identifier
@@ -172,6 +178,9 @@ function networkChangedCallback()
             "🌐 Network Status: 🔌 Ethernet disconnected. 📶 WiFi turned on.")
     end
 end
+
+-- Execute the callback once at Hammerspoon startup to ensure correct network status
+networkChangedCallback()
 
 wifiWatcher = hs.network.reachability.internet():setCallback(
                   networkChangedCallback):start()
