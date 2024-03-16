@@ -88,8 +88,6 @@ function maximizeWindow(window)
 end
 
 function centerWindowOnNewScreen(window)
-    
-    
     log("Centering window", {window})
     window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
     centeredWindows[windowID] = true
@@ -97,6 +95,13 @@ end
 
 -- Function to maximize window if moved to a new screen and was maximized
 function maximizeWindowOnNewScreenIfNecessary(window)
+    local appName = window:application():name()
+    local windowName = window:title()
+    if appName == 'Alfred' and windowName == 'Alfred' then
+        log("Exiting due to Alfred window", {window})
+        return
+    end
+    
     local windowID, currentScreenID = window:id(), window:screen():id()
 
     if currentScreenID ~= windowScreenMap[windowID] then
@@ -110,9 +115,12 @@ function maximizeWindowOnNewScreenIfNecessary(window)
         
         -- Just center all windows when they move screens
         -- This will have to change if/when we start to do fancy proportional stuff, like with split windows and whatnot
-        log("Centering window", {window})
-        window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-        centeredWindows[windowID] = true
+        local appName = window:application():name()
+        if appName ~= 'Remotasks' and appName ~= 'Remotasks Helper' then
+            log("Centering window", {window})
+            window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
+            centeredWindows[windowID] = true
+        end
 
         -- Check if the window was centered using the centeredWindows dictionary
         -- if centeredWindows[windowID] then
@@ -141,7 +149,11 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or
         app == "Trello" then
         if window:title() ~= "" then
-            maximizeWindow(window)
+            if app == "superwhisper" then
+                window:centerOnScreen(nil, true, 0)
+            else
+                maximizeWindow(window)
+            end
         else
             log("Skipped maximizing due to empty window title", {app})
         end
