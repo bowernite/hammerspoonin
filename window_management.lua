@@ -49,8 +49,6 @@ end
 function maximizeWindow(window)
     log("Maximizing window", {window})
 
-    -- window:setFrame({x = 0, y = 0, w = window:screen():frame().w, h = window:screen():frame().h})
-
     window:setTopLeft({x = 0, y = 0})
     hs.timer.doAfter(0.25, function() window:maximize() end)
 
