@@ -25,11 +25,12 @@ local function restartVividApp()
     hs.application.open("/Applications/Vivid.app")
 end
 
--- Screen watcher to detect screen changes
-local screenWatcher = hs.screen.watcher.newWithActiveScreen(function(
-    activeChanged)
-    if not activeChanged then
-        -- A screen was disconnected
+-- Screen watcher to detect screen changes and prevent potential loop by limiting restarts
+local lastRestart = os.time()
+local screenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChanged)
+    if not activeChanged and os.difftime(os.time(), lastRestart) > 5 then
+        -- A screen was disconnected and it's been more than 5 seconds since the last restart
+        lastRestart = os.time() -- Update the last restart time
         -- Introduce a delay before restarting to prevent a loop
         hs.timer.doAfter(1, function() restartVividApp() end)
     end
