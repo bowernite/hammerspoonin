@@ -41,17 +41,17 @@ screenWatcher:start()
 hs.timer.doAfter(1, function() restartVividApp() end)
 
 local function ensureFluxRunning()
-    local sunsetTime = hs.location.sunset() -- Get sunset time
-    local sunriseTime = hs.location.sunrise() -- Get sunrise time
-
-    -- Adjust times to 30 minutes after sunset and 30 minutes before sunrise
-    local fluxStartTime = os.date("*t", sunsetTime + (30 * 60))
-    local fluxEndTime = os.date("*t", sunriseTime - (30 * 60))
+    local fluxStartTime = 19 * 60 * 60 -- 7pm in seconds
+    local fluxEndTime = 5 * 60 * 60 -- 5am in seconds
 
     local currentTime = os.time()
+    local currentHour = os.date("*t", currentTime).hour
+    local currentSeconds = currentHour * 60 * 60 +
+                               os.date("*t", currentTime).min * 60 +
+                               os.date("*t", currentTime).sec
 
     -- Check if current time is within the Flux running period
-    if currentTime > fluxStartTime and currentTime < fluxEndTime then
+    if (currentSeconds >= fluxStartTime or currentSeconds <= fluxEndTime) then
         if not isProcessRunning("Flux") then
             log(
                 "🔆🕯️ Flux is not running during its allowed time; starting Flux")
