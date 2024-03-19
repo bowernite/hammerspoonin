@@ -51,6 +51,27 @@ function maximizeWindow(window)
 
     window:setTopLeft({x = 0, y = 0})
     hs.timer.doAfter(0.25, function() window:maximize() end)
+    
+    local checkMaximized = function()
+        local maximized = window:isFullScreen() or
+                          (window:frame().w == window:screen():frame().w and
+                           window:frame().h == window:screen():frame().h)
+        if maximized then
+            log("Window is maximized as expected", {window})
+            return true -- Stop the timer if the window is maximized
+        else
+            log("Window is not maximized as expected, correcting", {window})
+            window:maximize()
+        end
+    end
+
+    local timer = hs.timer.doEvery(1, function()
+        if checkMaximized() then
+            timer:stop()
+        end
+    end)
+
+    hs.timer.doAfter(10, function() timer:stop() end) -- Stop checking after 10 seconds
 
     maximizedWindows[window:id()] = true
 end
