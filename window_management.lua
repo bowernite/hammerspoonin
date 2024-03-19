@@ -2,16 +2,37 @@ require("log_utils")
 
 hs.window.animationDuration = 0
 
+BLACKLIST_RULES = {{app = "Alfred", window = "Alfred"}, {app = "Vivid"}}
+
+-- Function to check if a window is blacklisted
+function isWindowBlacklisted(window)
+    local appName = window:application():name()
+    local windowName = window:title()
+    for _, rule in ipairs(BLACKLIST_RULES) do
+        if appName == rule.app and
+            (not rule.window or windowName == rule.window) then
+            return true
+        end
+    end
+    return false
+end
+
 windowScreenMap = {}
 centeredWindows = {} -- Dictionary to keep track of centered windows
 maximizedWindows = {} -- Dictionary to keep track of maximized windows
 
-function updateWindowScreenMap(windowID, screenID)
+function updateWindowScreenMap(window)
+    if isWindowBlacklisted(window) then return end
+
+    local windowID = window:id()
+    local screenID = window:screen():id()
     windowScreenMap[windowID] = screenID
 end
 
 -- Function to check if a window is centered on its screen
 function isWindowCentered(window)
+    if isWindowBlacklisted(window) then return end
+
     local windowFrame = window:frame()
     local screenFrame = window:screen():frame()
     -- Adjusting the window's coordinates relative to its current screen
@@ -31,31 +52,37 @@ end
 function initWindowStates()
     local allWindows = hs.window.allWindows()
     for _, window in ipairs(allWindows) do
-        local windowID = window:id()
+        if isWindowBlacklisted(window) then return end
 
-        updateWindowScreenMap(windowID, window:screen():id())
+        updateWindowScreenMap(window)
 
         -- Update centered windows
-        centeredWindows[windowID] = isWindowCentered(window)
+        centeredWindows[window:id()] = isWindowCentered(window)
 
         -- Update maximized windows
         local screenFrame = window:screen():frame()
-        maximizedWindows[windowID] = window:isFullScreen() or
-                                         (window:frame().w == screenFrame.w and
-                                             window:frame().h == screenFrame.h)
+        maximizedWindows[window:id()] = window:isFullScreen() or
+                                            (window:frame().w == screenFrame.w and
+                                                window:frame().h ==
+                                                screenFrame.h)
     end
 end
 
 function maximizeWindow(window)
+    if isWindowBlacklisted(window) then
+        log("Exiting due to blacklisted window", {window})
+        return
+    end
+
     log("Maximizing window", {window})
 
     window:setTopLeft({x = 0, y = 0})
     hs.timer.doAfter(0.25, function() window:maximize() end)
-    
+
     local checkMaximized = function()
         local maximized = window:isFullScreen() or
-                          (window:frame().w == window:screen():frame().w and
-                           window:frame().h == window:screen():frame().h)
+                              (window:frame().w == window:screen():frame().w and
+                                  window:frame().h == window:screen():frame().h)
         if maximized then
             log("Window is maximized as expected", {window})
             return true -- Stop the timer if the window is maximized
@@ -66,9 +93,7 @@ function maximizeWindow(window)
     end
 
     local timer = hs.timer.doEvery(1, function()
-        if checkMaximized() then
-            timer:stop()
-        end
+        if checkMaximized() then timer:stop() end
     end)
 
     hs.timer.doAfter(10, function() timer:stop() end) -- Stop checking after 10 seconds
@@ -77,17 +102,22 @@ function maximizeWindow(window)
 end
 
 function centerWindowOnNewScreen(window)
+    if isWindowBlacklisted(window) then
+        log("Exiting due to blacklisted window", {window})
+        return
+    end
+
     log("Centering window", {window})
     window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-    centeredWindows[windowID] = true
+    centeredWindows[window:id()] = true
 end
 
 -- Function to maximize window if moved to a new screen and was maximized
 function maximizeWindowOnNewScreenIfNecessary(window)
     local appName = window:application():name()
     local windowName = window:title()
-    if appName == 'Alfred' and windowName == 'Alfred' then
-        log("Exiting due to Alfred window", {window})
+    if isWindowBlacklisted(window) then
+        log("Exiting due to blacklisted window", {window})
         return
     end
 
@@ -104,19 +134,9 @@ function maximizeWindowOnNewScreenIfNecessary(window)
 
         -- Just center all windows when they move screens
         -- This will have to change if/when we start to do fancy proportional stuff, like with split windows and whatnot
-        local appName = window:application():name()
-        if appName ~= 'Remotasks' and appName ~= 'Remotasks Helper' then
-            log("Centering window", {window})
-            window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-            centeredWindows[windowID] = true
-        end
-
-        -- Check if the window was centered using the centeredWindows dictionary
-        -- if centeredWindows[windowID] then
-        --     log("Was Centered✅")
-        --     window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-        --     centeredWindows[windowID] = true
-        -- end
+        log("Centering window", {window})
+        window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
+        centeredWindows[windowID] = true
     end
 
     -- Update the window's screen ID in the map and check if it's centered
@@ -146,7 +166,7 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
         end
     end
 
-    updateWindowScreenMap(window:id(), window:screen():id())
+    updateWindowScreenMap(window)
 end)
 
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
@@ -154,7 +174,7 @@ windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     log("Window moved", {window, screen = window:screen()})
     maximizeWindowOnNewScreenIfNecessary(window)
 
-    updateWindowScreenMap(window:id(), window:screen():id())
+    updateWindowScreenMap(window)
 end)
 
 -- Initialize
