@@ -129,7 +129,7 @@ function maximizeWindowOnNewScreenIfNecessary(window)
     local windowID, currentScreenID = window:id(), window:screen():id()
 
     local oldScreenID = windowScreenMap[windowID]
-    log("Checking to see if window moved", {
+    log("Checking to see if window moved screens", {
         oldScreenID = oldScreenID,
         currentScreenID = currentScreenID,
         window = window
