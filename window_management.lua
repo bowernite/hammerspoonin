@@ -92,7 +92,8 @@ function maximizeWindow(window)
         end
     end
 
-    local timer = hs.timer.doEvery(1, function()
+    local timer
+    timer = hs.timer.doEvery(1, function()
         if checkMaximized() then timer:stop() end
     end)
 
