@@ -3,7 +3,10 @@ require("windows/window_utils")
 
 hs.window.animationDuration = 0
 
-BLACKLIST_RULES = {{app = "Alfred", window = "Alfred"}, {app = "Vivid"}}
+BLACKLIST_RULES = {
+    {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
+    {app = "Remotasks Helper"}
+}
 
 -- Function to check if a window is blacklisted
 function isWindowBlacklisted(window)
