@@ -1,4 +1,5 @@
 require("log_utils")
+require("windows/window_utils")
 
 hs.window.animationDuration = 0
 
@@ -8,6 +9,12 @@ BLACKLIST_RULES = {{app = "Alfred", window = "Alfred"}, {app = "Vivid"}}
 function isWindowBlacklisted(window)
     local appName = window:application():name()
     local windowName = window:title()
+
+    if not isMainWindow(window) then
+        log("Not a main window: ", {window})
+        return true
+    end
+
     for _, rule in ipairs(BLACKLIST_RULES) do
         if appName == rule.app and
             (not rule.window or windowName == rule.window) then
