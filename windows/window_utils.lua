@@ -9,3 +9,10 @@ function isMainWindow(window)
     return role == "AXWindow" and
                (subrole == "AXStandardWindow" or subrole == "")
 end
+
+function isWindowMaximized(window)
+    return window:isFullScreen() or
+               (window:frame().w == window:screen():frame().w and
+                   window:frame().h == window:screen():frame().h)
+end
+

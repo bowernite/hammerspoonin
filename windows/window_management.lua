@@ -68,10 +68,7 @@ function initWindowStates()
 
         -- Update maximized windows
         local screenFrame = window:screen():frame()
-        maximizedWindows[window:id()] = window:isFullScreen() or
-                                            (window:frame().w == screenFrame.w and
-                                                window:frame().h ==
-                                                screenFrame.h)
+        maximizedWindows[window:id()] = isWindowMaximized(window)
     end
 end
 
@@ -194,6 +191,8 @@ windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     maximizeWindowOnNewScreenIfNecessary(window)
 
     updateWindowScreenMap(window)
+
+    maximizedWindows[windowID] = isWindowMaximized(window)
 end)
 
 -- Initialize
