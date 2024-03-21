@@ -124,7 +124,15 @@ function maximizeWindowOnNewScreenIfNecessary(window)
 
     local windowID, currentScreenID = window:id(), window:screen():id()
 
-    if currentScreenID ~= windowScreenMap[windowID] then
+    local oldScreenID = windowScreenMap[windowID]
+    log("Checking to see if window moved", {
+        oldScreenID = oldScreenID,
+        currentScreenID = currentScreenID,
+        window = window
+    })
+    local windowIsOnNewScreenOrInitialScreen = currentScreenID ~= oldScreenID
+    if windowIsOnNewScreenOrInitialScreen then
+        log("Window is on a new screen or initial screen")
         local newScreen = hs.screen.find(currentScreenID)
 
         if maximizedWindows[windowID] then
@@ -135,9 +143,12 @@ function maximizeWindowOnNewScreenIfNecessary(window)
 
         -- Just center all windows when they move screens
         -- This will have to change if/when we start to do fancy proportional stuff, like with split windows and whatnot
-        log("Centering window", {window})
-        window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-        centeredWindows[windowID] = true
+        local windowMovedScreens = oldScreenID ~= nil
+        if windowMovedScreens then
+            log("Window moved screens; centering window", {window})
+            window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
+            centeredWindows[windowID] = true
+        end
     end
 
     -- Update the window's screen ID in the map and check if it's centered
