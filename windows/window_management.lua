@@ -171,19 +171,19 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
 
     -- Maximize windows for specific apps
     -- WIP
-    local app = window:application():name()
-    if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or
-        app == "Trello" then
-        if window:title() ~= "" then
-            if app == "superwhisper" then
-                window:centerOnScreen(nil, true, 0)
-            else
-                maximizeWindow(window)
-            end
-        else
-            log("Skipped maximizing due to empty window title", {app})
-        end
-    end
+    -- local app = window:application():name()
+    -- if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or
+    --     app == "Trello" then
+    --     if window:title() ~= "" then
+    --         if app == "superwhisper" then
+    --             window:centerOnScreen(nil, true, 0)
+    --         else
+    --             maximizeWindow(window)
+    --         end
+    --     else
+    --         log("Skipped maximizing due to empty window title", {app})
+    --     end
+    -- end
 
     updateWindowScreenMap(window)
 end)
