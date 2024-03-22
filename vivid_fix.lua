@@ -57,6 +57,6 @@ hs.timer.doAfter(1,
                  function() if not isNighttime() then restartVividApp() end end)
 
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
-fluxTimer = hs.timer.doEvery(60, startFluxOrVivid)
+fluxTimer = hs.timer.doEvery(600, startFluxOrVivid)
 startFluxOrVivid()
 
