@@ -43,6 +43,7 @@ local lastRestart = os.time()
 local screenWatcher = hs.screen.watcher.newWithActiveScreen(function(
     activeChanged)
     if not activeChanged and os.difftime(os.time(), lastRestart) > 5 then
+        log("🔆 Screen active state unchanged and sufficient time passed since last restart; preparing to restart Vivid.")
         lastRestart = os.time() -- Update the last restart time
         hs.timer.doAfter(1, restartVividIfNotNighttime)
     end
@@ -51,7 +52,10 @@ end)
 screenWatcher:start()
 
 -- Delay initial restart to prevent potential loop at startup
-hs.timer.doAfter(1, restartVividIfNotNighttime)
+hs.timer.doAfter(1, function()
+    log("🔆 Initiating delayed restart of Vivid to prevent potential loop at startup")
+    restartVividIfNotNighttime()
+end)
 
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
