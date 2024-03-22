@@ -5,7 +5,6 @@ function isProcessRunning(processName)
 end
 
 function killProcess(processName)
-    log("🔆 Checking if " .. processName .. " is running")
     if isProcessRunning(processName) then
         log("🔆 " .. processName .. " is running; killing")
         hs.execute("pkill -f '" .. processName .. "'")

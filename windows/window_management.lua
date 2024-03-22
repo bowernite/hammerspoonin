@@ -14,7 +14,7 @@ function isWindowBlacklisted(window)
     local windowName = window:title()
 
     if not isMainWindow(window) then
-        log("Not a main window: ", {window})
+        -- log("Not a main window: ", {window})
         return true
     end
 
@@ -63,7 +63,7 @@ function centerWindow(window)
 
     local windowID = window:id()
     log("Centering window", {window})
-    window:centerOnScreen(window:screen(), true, 0) -- Center on the current screen with animation
+    window:centerOnScreen(nil, false, 0) -- Center on the current screen with animation
     centeredWindows[windowID] = true
 end
 
@@ -113,12 +113,14 @@ windowWatcher = hs.window.filter.new(nil)
 function setDefaultWindowSize(window)
     local appName = window:application():name()
     local defaultSizes = {
-        ["Finder"] = {w = 1024, h = 768},
-        ["Notes"] = {w = 600, h = 400},
+        ["Finder"] = {w = 800, h = 600},
+        ["Notes"] = {w = 1000, h = 1000},
         ["System Settings"] = {w = 800, h = 600},
-        ["Reminders"] = {w = 500, h = 700},
-        ["Clock"] = {w = 300, h = 300},
-        ["Bear"] = {w = 1000, h = 1000}
+        ["Reminders"] = {w = 700, h = 600},
+        ["Clock"] = {w = 600, h = 600},
+        ["Bear"] = {w = 1000, h = 1000},
+        ["Messages"] = {w = 1000, h = 800},
+        ["Contacts"] = {w = 700, h = 700}
     }
 
     -- log("App Name: " .. appName)

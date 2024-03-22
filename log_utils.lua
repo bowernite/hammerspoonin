@@ -1,4 +1,3 @@
-
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
     local screenFrame = screen:frame()
@@ -26,6 +25,8 @@ function log(message, details)
                 elseif type(value.isWindow) == "function" and value:isWindow() then
                     logMessage = logMessage .. " | " .. key .. ": " ..
                                      formatWindowForLog(value)
+
+                    if value:title() == "" then return end
                 end
             else
                 logMessage = logMessage .. " | " .. key .. ": " ..
