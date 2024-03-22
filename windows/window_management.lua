@@ -51,7 +51,6 @@ function initWindowStates()
         centeredWindows[window:id()] = isWindowCentered(window)
 
         -- Update maximized windows
-        local screenFrame = window:screen():frame()
         maximizedWindows[window:id()] = isWindowMaximized(window)
     end
 end
@@ -174,4 +173,5 @@ end)
 
 -- Initialize
 initWindowStates()
+
 
