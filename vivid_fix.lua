@@ -1,17 +1,17 @@
 require("log_utils")
 require("utils")
 
-local function restartVividApp()
-    killProcess("Vivid")
+local function killAndRestartApp(appName, delayBeforeRestart)
+    killProcess(appName)
 
     -- Wait for the app to fully terminate before attempting to restart
-    hs.timer.usleep(500000) -- 0.5 seconds
+    hs.timer.usleep(delayBeforeRestart)
 
-    log("🔆 Starting Vivid App")
-    hs.application.open("Vivid")
+    log("🔆 Starting " .. appName)
+    hs.application.open(appName)
 end
 
-local function startFluxOrVivid()
+local function handleFluxState()
     if isNighttime() then
         if not isProcessRunning("Flux") then
             log(
@@ -20,15 +20,13 @@ local function startFluxOrVivid()
         else
             log("🔆🕯️ Flux is already running as expected")
         end
-
         killProcess("Vivid")
     else
         if isProcessRunning("Flux") then
             log(
                 "🔆🕯️ Flux is running outside its allowed time; killing Flux")
             killProcess("Flux")
-            -- Restart Vivid app whenever we kill Flux
-            restartVividApp()
+            killAndRestartApp("Vivid", 500000) -- Restart Vivid app whenever we kill Flux
         else
             log(
                 "🔆🕯️ Flux is not running outside its allowed time, as expected")
@@ -36,27 +34,26 @@ local function startFluxOrVivid()
     end
 end
 
+local function restartVividIfNotNighttime()
+    if not isNighttime() then killAndRestartApp("Vivid", 500000) end
+end
+
 -- Screen watcher to detect screen changes and prevent potential loop by limiting restarts
 local lastRestart = os.time()
 local screenWatcher = hs.screen.watcher.newWithActiveScreen(function(
     activeChanged)
     if not activeChanged and os.difftime(os.time(), lastRestart) > 5 then
-        -- A screen was disconnected and it's been more than 5 seconds since the last restart
         lastRestart = os.time() -- Update the last restart time
-        -- Introduce a delay before restarting to prevent a loop
-        hs.timer.doAfter(1, function()
-            if not isNighttime() then restartVividApp() end
-        end)
+        hs.timer.doAfter(1, restartVividIfNotNighttime)
     end
 end)
 
 screenWatcher:start()
 
 -- Delay initial restart to prevent potential loop at startup
-hs.timer.doAfter(1,
-                 function() if not isNighttime() then restartVividApp() end end)
+hs.timer.doAfter(1, restartVividIfNotNighttime)
 
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
-fluxTimer = hs.timer.doEvery(600, startFluxOrVivid)
-startFluxOrVivid()
+fluxTimer = hs.timer.doEvery(600, handleFluxState)
+handleFluxState()
 
