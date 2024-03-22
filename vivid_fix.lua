@@ -38,22 +38,23 @@ local function restartVividIfNotNighttime()
     if not isNighttime() then killAndRestartApp("Vivid", 500000) end
 end
 
--- Screen watcher to detect screen changes and prevent potential loop by limiting restarts
-local lastRestart = os.time()
-local screenWatcher = hs.screen.watcher.newWithActiveScreen(function(
-    activeChanged)
-    if not activeChanged and os.difftime(os.time(), lastRestart) > 5 then
-        log("🔆 Screen active state unchanged and sufficient time passed since last restart; preparing to restart Vivid.")
-        lastRestart = os.time() -- Update the last restart time
-        hs.timer.doAfter(1, restartVividIfNotNighttime)
+-- Screen watcher to restart Vivid when a monitor is disconnected
+local screenWatcher = hs.screen.watcher.new(function()
+    local screenCount = #hs.screen.allScreens()
+    if screenCount < previousScreenCount then
+        log("🔆 Monitor disconnected; preparing to restart Vivid.")
+        hs.timer.doAfter(5, function() restartVividIfNotNighttime() end)
     end
+    previousScreenCount = screenCount
 end)
+previousScreenCount = #hs.screen.allScreens()
 
 screenWatcher:start()
 
 -- Delay initial restart to prevent potential loop at startup
 hs.timer.doAfter(1, function()
-    log("🔆 Initiating delayed restart of Vivid to prevent potential loop at startup")
+    log(
+        "🔆 Initiating delayed restart of Vivid to prevent potential loop at startup")
     restartVividIfNotNighttime()
 end)
 
