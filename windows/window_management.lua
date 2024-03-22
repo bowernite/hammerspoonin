@@ -43,15 +43,15 @@ end
 function initWindowStates()
     local allWindows = hs.window.allWindows()
     for _, window in ipairs(allWindows) do
-        if isWindowBlacklisted(window) then return end
+        if not isWindowBlacklisted(window) then
+            updateWindowScreenMap(window)
 
-        updateWindowScreenMap(window)
+            -- Update centered windows
+            centeredWindows[window:id()] = isWindowCentered(window)
 
-        -- Update centered windows
-        centeredWindows[window:id()] = isWindowCentered(window)
-
-        -- Update maximized windows
-        maximizedWindows[window:id()] = isWindowMaximized(window)
+            -- Update maximized windows
+            maximizedWindows[window:id()] = isWindowMaximized(window)
+        end
     end
 end
 
