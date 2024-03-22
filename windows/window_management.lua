@@ -47,6 +47,8 @@ function initWindowStates()
 
         updateWindowScreenMap(window)
 
+        -- Update centered and maximized windows
+        local windowID = window:id()
         -- Update centered windows
         centeredWindows[window:id()] = isWindowCentered(window)
 
