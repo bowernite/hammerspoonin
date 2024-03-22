@@ -52,11 +52,11 @@ previousScreenCount = #hs.screen.allScreens()
 screenWatcher:start()
 
 -- Delay initial restart to prevent potential loop at startup
-hs.timer.doAfter(1, function()
-    log(
-        "🔆 Initiating delayed restart of Vivid to prevent potential loop at startup")
-    restartVividIfNotNighttime()
-end)
+-- hs.timer.doAfter(1, function()
+--     log(
+--         "🔆 Initiating delayed restart of Vivid to prevent potential loop at startup")
+--     restartVividIfNotNighttime()
+-- end)
 
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
