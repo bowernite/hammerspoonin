@@ -136,7 +136,7 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     updateWindowScreenMap(window)
 
     if isWindowBlacklisted(window) then return end
-    
+
     setDefaultWindowSize(window)
 
     -- adjustWindowIfNecessary(window)
@@ -173,5 +173,4 @@ end)
 
 -- Initialize
 initWindowStates()
-
 
