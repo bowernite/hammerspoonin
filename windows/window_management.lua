@@ -130,16 +130,16 @@ function setDefaultWindowSize(window)
         window:setSize(size)
         centerWindow(window)
     else
-        maximizeWindow(window)
+        if not maximizeWindow(window) then centerWindow(window) end
     end
 end
 
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
+    if isWindowBlacklisted(window) then return end
+
     log("Window created", {window, screen = window:screen()})
 
     updateWindowScreenMap(window)
-
-    if isWindowBlacklisted(window) then return end
 
     setDefaultWindowSize(window)
 
@@ -163,11 +163,11 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
 end)
 
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
+    if isWindowBlacklisted(window) then return end
+
     log("Window moved", {window, screen = window:screen()})
 
     updateWindowScreenMap(window)
-
-    if isWindowBlacklisted(window) then return end
 
     adjustWindowIfNecessary(window)
 

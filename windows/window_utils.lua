@@ -37,12 +37,12 @@ end
 
 function maximizeWindow(window)
     log("Maximizing window", {window})
-    
-    if not window:isResizable() then
+
+    if not window.isResizable or not window:isResizable() then
         log("Window is not resizable, skipping maximization", {window})
-        return
+        return false
     end
-    
+
     window:maximize()
 
     window:setTopLeft({x = 0, y = 0})
@@ -69,4 +69,6 @@ function maximizeWindow(window)
     hs.timer.doAfter(10, function() timer:stop() end) -- Stop checking after 10 seconds
 
     maximizedWindows[window:id()] = true
+    
+    return true
 end
