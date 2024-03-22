@@ -55,18 +55,6 @@ function initWindowStates()
     end
 end
 
-function centerWindow(window)
-    if not window then
-        log("No window provided for centering")
-        return
-    end
-
-    local windowID = window:id()
-    log("Centering window", {window})
-    window:centerOnScreen(nil, false, 0) -- Center on the current screen with animation
-    centeredWindows[windowID] = true
-end
-
 function adjustWindowIfNecessary(window)
     local appName = window:application():name()
     local windowName = window:title()

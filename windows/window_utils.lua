@@ -69,6 +69,17 @@ function maximizeWindow(window)
     hs.timer.doAfter(10, function() timer:stop() end) -- Stop checking after 10 seconds
 
     maximizedWindows[window:id()] = true
-    
+
     return true
+end
+
+function centerWindow(window)
+    if not window then
+        log("No window provided for centering")
+        return
+    end
+
+    local windowID = window:id()
+    log("Centering window", {window})
+    window:centerOnScreen(nil, false, 0) -- Center on the current screen with animation
 end
