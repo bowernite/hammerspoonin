@@ -56,6 +56,18 @@ function initWindowStates()
     end
 end
 
+function centerWindow(window)
+    if not window then
+        log("No window provided for centering")
+        return
+    end
+
+    local windowID = window:id()
+    log("Centering window", {window})
+    window:centerOnScreen(window:screen(), true, 0) -- Center on the current screen with animation
+    centeredWindows[windowID] = true
+end
+
 function adjustWindowIfNecessary(window)
     local appName = window:application():name()
     local windowName = window:title()
@@ -88,8 +100,7 @@ function adjustWindowIfNecessary(window)
         local windowMovedScreens = oldScreenID ~= nil
         if windowMovedScreens then
             log("Window moved screens; centering window", {window})
-            window:centerOnScreen(currentScreen, false, 0) -- Center on the new screen without animation
-            centeredWindows[windowID] = true
+            centerWindow(window)
         end
     end
 
@@ -100,9 +111,36 @@ end
 -- Watch for window events
 windowWatcher = hs.window.filter.new(nil)
 
+function setDefaultWindowSize(window)
+    local appName = window:application():name()
+    local defaultSizes = {
+        ["Finder"] = {w = 1024, h = 768},
+        ["Notes"] = {w = 600, h = 400},
+        ["System Settings"] = {w = 800, h = 600},
+        ["Reminders"] = {w = 500, h = 700},
+        ["Clock"] = {w = 300, h = 300},
+        ["Bear"] = {w = 1000, h = 1000}
+    }
+
+    if defaultSizes[appName] then
+        local size = defaultSizes[appName]
+        window:setSize(size)
+        centerWindow(window)
+    else
+        maximizeWindow(window)
+    end
+end
+
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     log("Window created", {window, screen = window:screen()})
-    adjustWindowIfNecessary(window)
+
+    updateWindowScreenMap(window)
+
+    if isWindowBlacklisted(window) then return end
+    
+    setDefaultWindowSize(window)
+
+    -- adjustWindowIfNecessary(window)
 
     -- Maximize windows for specific apps
     -- WIP
@@ -119,15 +157,16 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     --         log("Skipped maximizing due to empty window title", {app})
     --     end
     -- end
-
-    updateWindowScreenMap(window)
 end)
 
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     log("Window moved", {window, screen = window:screen()})
-    adjustWindowIfNecessary(window)
 
     updateWindowScreenMap(window)
+
+    if isWindowBlacklisted(window) then return end
+
+    adjustWindowIfNecessary(window)
 
     local windowID = window:id()
     maximizedWindows[windowID] = isWindowMaximized(window)
