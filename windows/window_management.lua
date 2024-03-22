@@ -5,7 +5,7 @@ hs.window.animationDuration = 0
 
 BLACKLIST_RULES = {
     {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
-    {app = "Remotasks Helper"}
+    {app = "Remotasks Helper"}, {app = "Calculator"}
 }
 
 -- Function to check if a window is blacklisted
@@ -121,7 +121,9 @@ function setDefaultWindowSize(window)
         ["Bear"] = {w = 1000, h = 1000}
     }
 
+    -- log("App Name: " .. appName)
     if defaultSizes[appName] then
+        log("Default size found for app")
         local size = defaultSizes[appName]
         window:setSize(size)
         centerWindow(window)
