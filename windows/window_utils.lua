@@ -38,6 +38,11 @@ end
 function maximizeWindow(window)
     log("Maximizing window", {window})
     
+    if not window:isResizable() then
+        log("Window is not resizable, skipping maximization", {window})
+        return
+    end
+    
     window:maximize()
 
     window:setTopLeft({x = 0, y = 0})
