@@ -17,8 +17,6 @@ local function handleFluxState()
             log(
                 "🔆🕯️ Flux is not running during its allowed time; starting Flux")
             hs.execute("open -a Flux")
-        else
-            log("🔆🕯️ Flux is already running as expected")
         end
         killProcess("Vivid")
     else
@@ -27,9 +25,6 @@ local function handleFluxState()
                 "🔆🕯️ Flux is running outside its allowed time; killing Flux")
             killProcess("Flux")
             killAndRestartApp("Vivid", 500000) -- Restart Vivid app whenever we kill Flux
-        else
-            log(
-                "🔆🕯️ Flux is not running outside its allowed time, as expected")
         end
     end
 end
