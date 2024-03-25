@@ -38,10 +38,10 @@ end
 function maximizeWindow(window)
     log("Maximizing window", {window})
 
-    if not window.isResizable or not window:isResizable() then
-        log("Window is not resizable, skipping maximization", {window})
-        return false
-    end
+    -- if not window.isResizable or not window:isResizable() then
+    --     log("Window is not resizable, skipping maximization", {window})
+    --     return false
+    -- end
 
     window:maximize()
 
