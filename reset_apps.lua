@@ -91,6 +91,6 @@ local function resetAppsEveryMorning()
     wakeWatcher:start()
 end
 
-resetAppsEveryMorning()
+-- resetAppsEveryMorning()
 
 hs.hotkey.bind({"cmd", "alt"}, "K", function() resetApps(false) end)
