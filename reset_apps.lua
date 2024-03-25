@@ -9,7 +9,7 @@ local function resetApps(restartApps)
     local backgroundApps = {
         "Flux", "superwhisper", "Alfred", "Alfred 5", "Karabiner-Elements",
         "Rectangle", "Amphetamine", "Homerow", "Monitor Control", "Hammerspoon",
-        "Finder", "CleanShot X"
+        "Finder", "CleanShot X", "Online"
     }
 
     -- Need to refine this, ie flux / Vivid conflicts
