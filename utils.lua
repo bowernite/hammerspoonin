@@ -7,10 +7,7 @@ end
 function killProcess(processName)
     if isProcessRunning(processName) then
         log("💀 " .. processName .. " is running; killing")
-        log("Stack Trace:", {trace = debug.traceback()})
         hs.execute("pkill -f '" .. processName .. "'")
-    else
-        log("✅ " .. processName .. " not running")
     end
 end
 
