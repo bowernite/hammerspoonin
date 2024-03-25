@@ -5,7 +5,8 @@ hs.window.animationDuration = 0
 
 BLACKLIST_RULES = {
     {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
-    {app = "Remotasks Helper"}, {app = "Calculator"}
+    {app = "Remotasks Helper"}, {app = "Calculator"},
+    {app = "Captive Network Assistant"}
 }
 
 -- Function to check if a window is blacklisted
