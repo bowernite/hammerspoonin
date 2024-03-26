@@ -7,11 +7,12 @@ BLACKLIST_RULES = {
     {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
     {app = "Remotasks Helper"}, {app = "Calculator"},
     {app = "Captive Network Assistant"}, {window = "Software Update"},
-    {app = "Security Agent"}
+    {app = "Security Agent"}, {app = "Homerow"}, {app = "superwhisper"}
 }
 
 -- Function to check if a window is blacklisted
 function isWindowBlacklisted(window)
+    if not window or not window:application() then return true end
     local appName = window:application():name()
     local windowName = window:title()
 
@@ -46,6 +47,8 @@ function initWindowStates()
     local allWindows = hs.window.allWindows()
     for _, window in ipairs(allWindows) do
         if not isWindowBlacklisted(window) then
+            setDefaultWindowSize(window)
+
             updateWindowScreenMap(window)
 
             -- Update centered windows
@@ -100,6 +103,39 @@ end
 -- Watch for window events
 windowWatcher = hs.window.filter.new(nil)
 
+function setDefaultRemotasksWindowSizes(window)
+    local screenFrame = window:screen():frame()
+    local screenWidth = screenFrame.w
+    local screenHeight = screenFrame.h
+    local minRemotasksWidth = 900
+    local remotasksWidth, helperWidth
+    local menuBarHeight = hs.screen.primaryScreen():frame().y
+
+    if screenWidth / 2 > minRemotasksWidth then
+        remotasksWidth = screenWidth / 2
+    else
+        remotasksWidth = minRemotasksWidth
+    end
+
+    helperWidth = screenWidth - remotasksWidth
+
+    if appName == "Remotasks" then
+        window:setFrame({
+            x = 0,
+            y = menuBarHeight,
+            w = remotasksWidth,
+            h = screenHeight - menuBarHeight
+        })
+    elseif appName == "Remotasks Helper" then
+        window:setFrame({
+            x = remotasksWidth,
+            y = menuBarHeight,
+            w = helperWidth,
+            h = screenHeight - menuBarHeight
+        })
+    end
+end
+
 function setDefaultWindowSize(window)
     local appName = window:application():name()
     local defaultSizes = {
@@ -119,6 +155,8 @@ function setDefaultWindowSize(window)
         local size = defaultSizes[appName]
         window:setSize(size)
         centerWindow(window)
+    elseif appName == "Remotasks" or appName == "Remotasks Helper" then
+        setDefaultRemotasksWindowSizes(window)
     else
         if not maximizeWindow(window) then centerWindow(window) end
     end

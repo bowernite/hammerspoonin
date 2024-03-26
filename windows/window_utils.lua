@@ -30,8 +30,8 @@ function isWindowCentered(window)
     local screenCenter = {x = screenFrame.w / 2, y = screenFrame.h / 2}
     local isCentered = math.abs(windowCenter.x - screenCenter.x) < 1 and
                            math.abs(windowCenter.y - screenCenter.y) < 1
-    log("Window Centered Check: ",
-        {window, screen = window:screen(), isCentered})
+    -- log("Window Centered Check: ",
+    --     {window, screen = window:screen(), isCentered})
     return isCentered
 end
 
