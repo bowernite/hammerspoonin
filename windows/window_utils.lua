@@ -35,18 +35,25 @@ function isWindowCentered(window)
     return isCentered
 end
 
+function isMaximizable(window)
+    local windowName = window:title()
+    if not windowName then return false end
+    if windowName:match("^Updating%s") then return false end
+    if windowName:lower():match("settings") then return false end
+
+    return true
+end
+
 function maximizeWindow(window)
     log("Maximizing window", {window})
 
-    -- if not window.isResizable or not window:isResizable() then
-    --     log("Window is not resizable, skipping maximization", {window})
-    --     return false
-    -- end
+    if not isMaximizable(window) then
+        log("Window is not maximizable; centering instead", {window})
+        centerWindow(window)
+        return false
+    end
 
     window:maximize()
-
-    window:setTopLeft({x = 0, y = 0})
-    hs.timer.doAfter(0.25, function() window:maximize() end)
 
     local checkMaximized = function()
         local maximized = window:isFullScreen() or
@@ -57,7 +64,9 @@ function maximizeWindow(window)
             return true -- Stop the timer if the window is maximized
         else
             log("Window is not maximized as expected, correcting", {window})
+            window:setTopLeft({x = 0, y = 0})
             window:maximize()
+            hs.timer.doAfter(0.25, function() window:maximize() end)
         end
     end
 
