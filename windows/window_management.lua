@@ -6,7 +6,7 @@ hs.window.animationDuration = 0
 BLACKLIST_RULES = {
     {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
     {app = "Remotasks Helper"}, {app = "Calculator"},
-    {app = "Captive Network Assistant"}
+    {app = "Captive Network Assistant"}, {window = "Software Update"}
 }
 
 -- Function to check if a window is blacklisted
@@ -20,7 +20,7 @@ function isWindowBlacklisted(window)
     end
 
     for _, rule in ipairs(BLACKLIST_RULES) do
-        if appName == rule.app and
+        if (not rule.app or appName == rule.app) and
             (not rule.window or windowName == rule.window) then
             return true
         end
