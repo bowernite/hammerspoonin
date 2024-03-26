@@ -6,7 +6,8 @@ hs.window.animationDuration = 0
 BLACKLIST_RULES = {
     {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
     {app = "Remotasks Helper"}, {app = "Calculator"},
-    {app = "Captive Network Assistant"}, {window = "Software Update"}
+    {app = "Captive Network Assistant"}, {window = "Software Update"},
+    {app = "Security Agent"}
 }
 
 -- Function to check if a window is blacklisted
@@ -18,6 +19,8 @@ function isWindowBlacklisted(window)
         -- log("Not a main window: ", {window})
         return true
     end
+
+    if windowName:match("^Updating%s") then return true end
 
     for _, rule in ipairs(BLACKLIST_RULES) do
         if (not rule.app or appName == rule.app) and
