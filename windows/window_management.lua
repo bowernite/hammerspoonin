@@ -22,6 +22,8 @@ function isWindowBlacklisted(window)
 
     if windowName:match("^Updating%s") then return true end
 
+    if windowName:lower():match("settings") then return true end
+
     for _, rule in ipairs(BLACKLIST_RULES) do
         if (not rule.app or appName == rule.app) and
             (not rule.window or windowName == rule.window) then
