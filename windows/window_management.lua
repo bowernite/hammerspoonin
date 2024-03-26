@@ -109,7 +109,7 @@ function setDefaultWindowSize(window)
         ["Notes"] = {w = 1000, h = 1000},
         ["System Settings"] = {w = 800, h = 600},
         ["Reminders"] = {w = 700, h = 600},
-        ["Clock"] = {w = 650, h = 660},
+        ["Clock"] = {w = 650, h = 670},
         ["Bear"] = {w = 1000, h = 1000},
         ["Messages"] = {w = 1000, h = 800},
         ["Contacts"] = {w = 700, h = 700}
