@@ -68,6 +68,11 @@ function adjustWindowIfNecessary(window)
         return
     end
 
+    if window:screen():name():lower():match("built%-in") then
+        log("Window is on MacBook's built-in display; not adjusting", {window})
+        return
+    end
+
     local windowID, currentScreenID = window:id(), window:screen():id()
 
     local oldScreenID = windowScreenMap[windowID]
@@ -195,13 +200,22 @@ windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
 
     log("Window moved", {window, screen = window:screen()})
 
-    updateWindowScreenMap(window)
-
     adjustWindowIfNecessary(window)
+
+    updateWindowScreenMap(window)
 
     local windowID = window:id()
     maximizedWindows[windowID] = isWindowMaximized(window)
 end)
+
+hs.screen.watcher.new(function()
+    local allWindows = hs.window.allWindows()
+    for _, window in ipairs(allWindows) do
+        if window:screen() == hs.screen.primaryScreen() then
+            adjustWindowIfNecessary(window)
+        end
+    end
+end):start()
 
 -- Initialize
 initWindowStates()

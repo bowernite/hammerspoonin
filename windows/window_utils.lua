@@ -53,6 +53,7 @@ function maximizeWindow(window)
         return false
     end
 
+    window:setTopLeft({x = 0, y = 0})
     window:maximize()
 
     local checkMaximized = function()
