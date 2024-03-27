@@ -53,7 +53,12 @@ screenWatcher:start()
 --     restartVividIfNotNighttime()
 -- end)
 
+handleFluxState()
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
-handleFluxState()
+-- Run flux on wake / computer unlock
+hs.caffeinate.watcher.new(function(event)
+    if event == hs.caffeinate.watcher.screensDidUnlock or event ==
+        hs.caffeinate.watcher.systemDidWake then handleFluxState() end
+end):start()
 
