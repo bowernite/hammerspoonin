@@ -8,7 +8,7 @@ local function resetApps(restartApps)
 
     local backgroundApps = {
         "Flux", "superwhisper", "Alfred", "Alfred 5", "Karabiner-Elements",
-        "Rectangle", "Amphetamine", "Homerow", "Monitor Control", "Hammerspoon",
+        "Rectangle", "Amphetamine", "Homerow", "MonitorControl", "Hammerspoon",
         "Finder", "CleanShot X", "Online"
     }
 
