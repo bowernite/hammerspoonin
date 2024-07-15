@@ -1,15 +1,26 @@
 require("log_utils")
 require("utils")
 
+-- Function: killAndRestartApp
+-- Parameters:
+--   appName (string): The name of the application to restart.
+--   delayBeforeRestart (number): The delay before restarting the application, in milliseconds (1 second = 1,000 milliseconds).
+-- Description:
+--   This function kills the specified application and restarts it after the given delay.
 local function killAndRestartApp(appName, delayBeforeRestart)
+    delayBeforeRestart = delayBeforeRestart or 500 -- Default to 500 milliseconds if not specified
     killProcess(appName)
 
     -- Wait for the app to fully terminate before attempting to restart
-    hs.timer.usleep(delayBeforeRestart)
+    hs.timer.usleep(delayBeforeRestart * 1000) -- Convert milliseconds to microseconds
 
     log("🔆 Starting " .. appName)
     hs.application.open(appName)
 end
+
+hs.urlevent.bind("killAndRestartApp", function(eventName, params)
+    killAndRestartApp(params["appName"], tonumber(params["delayBeforeRestart"]))
+end)
 
 local function handleFluxState()
     if isNighttime() then
@@ -24,13 +35,13 @@ local function handleFluxState()
             log(
                 "🔆🕯️ Flux is running outside its allowed time; killing Flux")
             killProcess("Flux")
-            killAndRestartApp("Vivid", 500000) -- Restart Vivid app whenever we kill Flux
+            killAndRestartApp("Vivid") -- Restart Vivid app whenever we kill Flux
         end
     end
 end
 
 local function restartVividIfNotNighttime()
-    if not isNighttime() then killAndRestartApp("Vivid", 500000) end
+    if not isNighttime() then killAndRestartApp("Vivid") end
 end
 
 -- Screen watcher to restart Vivid when a monitor is disconnected
