@@ -1,12 +1,9 @@
 require("log_utils")
 require("utils")
 
--- Function: killAndRestartApp
 -- Parameters:
 --   appName (string): The name of the application to restart.
 --   delayBeforeRestart (number): The delay before restarting the application, in milliseconds (1 second = 1,000 milliseconds).
--- Description:
---   This function kills the specified application and restarts it after the given delay.
 local function killAndRestartApp(appName, delayBeforeRestart)
     delayBeforeRestart = delayBeforeRestart or 500 -- Default to 500 milliseconds if not specified
     killProcess(appName)
