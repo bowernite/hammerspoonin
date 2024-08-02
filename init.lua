@@ -6,6 +6,7 @@ hs.ipc.cliInstall()
 require("vivid_fix")
 require("reset_apps")
 require("boot")
+require("morning_space")
 
 -- This is a rabbit hole, and you ain't ready right now
 -- require("windows/window_management")
