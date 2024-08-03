@@ -31,6 +31,7 @@ local activeDelayMessage = nil
 local testModeKeyCombo = {mods = {"cmd", "alt"}, key = "t"}
 
 local function showDelayMessage()
+    print("Showing delay message")
     local message = hs.alert.show("🌅 Good morning! Have some space 😌",
                                   hs.screen.mainScreen(), 150)
     activeDelayMessage = message
@@ -38,6 +39,7 @@ local function showDelayMessage()
 end
 
 local function removeDelayMessage()
+    print("Removing delay message")
     if activeDelayMessage then
         hs.alert.closeSpecific(activeDelayMessage)
         activeDelayMessage = nil
@@ -45,19 +47,25 @@ local function removeDelayMessage()
 end
 
 local function offerShutdown()
+    print("Offering shutdown option")
     local result = hs.dialog.blockAlert("Morning Routine",
                                         "Would you like to shut down instead of waiting?",
                                         "Shut Down", "Wait")
     if result == "Shut Down" then
         if not isTestMode then
+            print("User chose to shut down")
             hs.caffeinate.shutdownSystem()
         else
+            print("Test Mode: Simulating shutdown")
             hs.alert.show("Test Mode: System would shut down here")
         end
+    else
+        print("User chose to wait")
     end
 end
 
 local function createFullScreenOverlay()
+    print("Creating full screen overlay")
     local canvas = hs.canvas.new(hs.screen.mainScreen():fullFrame())
     canvas:appendElements({
         type = "rectangle",
@@ -69,6 +77,7 @@ local function createFullScreenOverlay()
 end
 
 local function clearActiveBlocking()
+    print("Clearing active blocking")
     if activeOverlay then
         activeOverlay:delete()
         activeOverlay = nil
@@ -84,11 +93,13 @@ local function clearActiveBlocking()
     removeDelayMessage()
     if isTestMode then
         isTestMode = false
+        print("Test Mode: Disabled")
         hs.alert.show("Test Mode: Disabled")
     end
 end
 
 local function applyMorningDelay()
+    print("Applying morning delay")
     local currentTime = os.time()
     local secondsSinceMidnight = currentTime % 86400
     local timeSinceLastDelay = currentTime - lastDelayTime
@@ -99,6 +110,7 @@ local function applyMorningDelay()
     local isEnoughTimeSinceLastDelay = timeSinceLastDelay >= 5400
     local shouldApplyDelay = isWithinTimeWindow and isEnoughTimeSinceLastDelay
     if shouldApplyDelay or isTestMode then
+        print("Delay conditions met, applying delay")
         local message = showDelayMessage()
         -- offerShutdown()
 
@@ -112,15 +124,20 @@ local function applyMorningDelay()
             -- Allow the test mode key combo to pass through
             if flags:containExactly(testModeKeyCombo.mods) and keyCode ==
                 hs.keycodes.map[testModeKeyCombo.key] then
+                print("Test mode key combo detected, allowing input")
                 return false
             end
 
             -- Block all other keyboard input
+            print("Blocking keyboard input")
             return true
         end)
         activeKeyboardBlocker:start()
 
-        hs.timer.doAfter(delay, function() clearActiveBlocking() end)
+        hs.timer.doAfter(delay, function() 
+            print("Delay timer finished, clearing blocking")
+            clearActiveBlocking() 
+        end)
 
         -- Move mouse to center every second
         activeMouseTimer = hs.timer.doEvery(1, function()
@@ -130,11 +147,14 @@ local function applyMorningDelay()
         end)
 
         lastDelayTime = currentTime
+    else
+        print("Delay conditions not met, skipping delay")
     end
 end
 
 hs.caffeinate.watcher.new(function(eventType)
     if eventType == hs.caffeinate.watcher.screensDidUnlock then
+        print("Screen unlocked, applying morning delay")
         applyMorningDelay()
     end
 end):start()
@@ -142,8 +162,10 @@ end):start()
 -- Function to toggle test mode
 local function toggleTestMode()
     if isTestMode then
+        print("Disabling test mode")
         clearActiveBlocking()
     else
+        print("Enabling test mode")
         isTestMode = true
         hs.alert.show("Test Mode: Enabled")
         applyMorningDelay()
