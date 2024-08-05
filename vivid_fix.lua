@@ -20,6 +20,7 @@ hs.urlevent.bind("killAndRestartApp", function(eventName, params)
 end)
 
 local function handleFluxState()
+    log("Handle flux state")
     if isNighttime() then
         if not isProcessRunning("Flux") then
             log(

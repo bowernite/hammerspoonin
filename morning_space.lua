@@ -101,7 +101,13 @@ end
 local function applyMorningDelay()
     print("Applying morning delay")
     local currentTime = os.time()
-    local secondsSinceMidnight = currentTime % 86400
+    print("Current time: " .. tostring(currentTime))
+    
+    -- Get the current date and time in the local time zone
+    local currentDate = os.date("*t")
+    local secondsSinceMidnight = currentDate.hour * 3600 + currentDate.min * 60 + currentDate.sec
+    print("Seconds since midnight: " .. tostring(secondsSinceMidnight))
+
     local timeSinceLastDelay = currentTime - lastDelayTime
     local delay = isTestMode and testModeDelay or morningDelay
 
@@ -109,6 +115,9 @@ local function applyMorningDelay()
                                    secondsSinceMidnight <= endTime
     local isEnoughTimeSinceLastDelay = timeSinceLastDelay >= 5400
     local shouldApplyDelay = isWithinTimeWindow and isEnoughTimeSinceLastDelay
+    print("isWithinTimeWindow: " .. tostring(isWithinTimeWindow))
+    print("isEnoughTimeSinceLastDelay: " .. tostring(isEnoughTimeSinceLastDelay))
+    print("shouldApplyDelay: " .. tostring(shouldApplyDelay))
     if shouldApplyDelay or isTestMode then
         print("Delay conditions met, applying delay")
         local message = showDelayMessage()
@@ -153,8 +162,10 @@ local function applyMorningDelay()
 end
 
 hs.caffeinate.watcher.new(function(eventType)
-    if eventType == hs.caffeinate.watcher.screensDidUnlock then
-        print("Screen unlocked, applying morning delay")
+    if eventType == hs.caffeinate.watcher.screensDidUnlock or
+       eventType == hs.caffeinate.watcher.screensDidWake or
+       eventType == hs.caffeinate.watcher.systemDidWake then
+        print("Screen unlocked or system woke, applying morning delay")
         applyMorningDelay()
     end
 end):start()
