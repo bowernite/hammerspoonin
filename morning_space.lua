@@ -16,10 +16,12 @@
 
     Note: Requires appropriate Hammerspoon permissions.
 ]] --
-local morningDelay = 90 -- 1.5 minutes in seconds
+require("utils")
+
+local morningDelay = 10 -- 1.5 minutes in seconds
 local testModeDelay = 10 -- 10 seconds for test mode
-local startTime = 6.5 * 3600 -- 6:30 AM in seconds
-local endTime = 9.5 * 3600 -- 9:30 AM in seconds
+local startTime = "6:30AM"
+local endTime = "9:30AM"
 local lastDelayTime = 0 -- Time of the last delay application
 local isTestMode = false -- Flag to enable test mode
 local activeOverlay = nil
@@ -100,24 +102,16 @@ end
 
 local function applyMorningDelay()
     print("Applying morning delay")
-    local currentTime = os.time()
-    print("Current time: " .. tostring(currentTime))
-    
-    -- Get the current date and time in the local time zone
-    local currentDate = os.date("*t")
-    local secondsSinceMidnight = currentDate.hour * 3600 + currentDate.min * 60 + currentDate.sec
-    print("Seconds since midnight: " .. tostring(secondsSinceMidnight))
+
+    local currentTimeInfo = getCurrentTimeInfo()
+    local currentTime = currentTimeInfo.time
 
     local timeSinceLastDelay = currentTime - lastDelayTime
     local delay = isTestMode and testModeDelay or morningDelay
 
-    local isWithinTimeWindow = secondsSinceMidnight >= startTime and
-                                   secondsSinceMidnight <= endTime
+    local isWithinTimeWindow = isWithinTimeWindow(startTime, endTime)
     local isEnoughTimeSinceLastDelay = timeSinceLastDelay >= 5400
     local shouldApplyDelay = isWithinTimeWindow and isEnoughTimeSinceLastDelay
-    print("isWithinTimeWindow: " .. tostring(isWithinTimeWindow))
-    print("isEnoughTimeSinceLastDelay: " .. tostring(isEnoughTimeSinceLastDelay))
-    print("shouldApplyDelay: " .. tostring(shouldApplyDelay))
     if shouldApplyDelay or isTestMode then
         print("Delay conditions met, applying delay")
         local message = showDelayMessage()
