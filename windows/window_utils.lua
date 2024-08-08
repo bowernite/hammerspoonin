@@ -61,7 +61,7 @@ function maximizeWindow(window)
                               (window:frame().w == window:screen():frame().w and
                                   window:frame().h == window:screen():frame().h)
         if maximized then
-            log("Window is maximized as expected", {window})
+            -- log("Window is maximized as expected", {window})
             return true -- Stop the timer if the window is maximized
         else
             log("Window is not maximized as expected, correcting", {window})

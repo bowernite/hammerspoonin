@@ -31,7 +31,7 @@ local function formatDetailsForLog(details)
                 if value:title() == "" then return logMessage end
             end
         else
-            logMessage = logMessage .. " | " ..
+            logMessage = logMessage ..
                              (type(key) == "number" and "" or (key .. ": ")) ..
                              tostring(value)
         end
