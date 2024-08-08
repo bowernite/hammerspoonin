@@ -20,16 +20,20 @@ local function formatDetailsForLog(details)
     for key, value in pairs(details) do
         if type(value) == "userdata" and value:frame() then
             if type(value.isScreen) == "function" and value:isScreen() then
-                logMessage = logMessage .. " | " .. key .. ": " ..
+                logMessage = logMessage .. " " ..
+                                 (type(key) == "number" and "" or (key .. ": ")) ..
                                  formatScreenForLog(value)
             elseif type(value.isWindow) == "function" and value:isWindow() then
-                logMessage = logMessage .. " | " .. key .. ": " ..
+                logMessage = logMessage .. " " ..
+                                 (type(key) == "number" and "" or (key .. ": ")) ..
                                  formatWindowForLog(value)
 
                 if value:title() == "" then return logMessage end
             end
         else
-            logMessage = logMessage .. " | " .. key .. ": " .. tostring(value)
+            logMessage = logMessage .. " | " ..
+                             (type(key) == "number" and "" or (key .. ": ")) ..
+                             tostring(value)
         end
     end
     return logMessage
@@ -106,8 +110,11 @@ function log(message, details)
     local filename = debug.getinfo(2, "S").source:match("^.+/(.+)$")
     local emoji = fileEmojis[filename] or "🔍"
 
-    local logMessage = "\n[" .. time .. "] " .. emoji .. " " .. message
-    if details then logMessage = logMessage .. formatDetailsForLog(details) end
+    local logMessage = "[" .. time .. "] " .. emoji .. " " .. message
+    if details then
+        logMessage = logMessage .. "\n\t" .. formatDetailsForLog(details) ..
+                         "\n"
+    end
 
     local color = ensureContrast(generateColorFromMessage(message))
     hs.console.printStyledtext(hs.styledtext.new(logMessage, {
