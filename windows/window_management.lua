@@ -8,7 +8,7 @@ BLACKLIST_RULES = {
     {app = "Remotasks Helper"}, {app = "Calculator"},
     {app = "Captive Network Assistant"}, {window = "Software Update"},
     {app = "Security Agent"}, {app = "Homerow"}, {app = "superwhisper"},
-    {window = "Untitled"}
+    {window = "Untitled"}, {app = "coreautha"}
 }
 
 -- Function to check if a window is blacklisted
