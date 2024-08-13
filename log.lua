@@ -108,7 +108,7 @@ end
 local fileEmojis = {
     ["window_utils.lua"] = "🪟",
     ["window_management.lua"] = "🪟",
-    ["log_utils.lua"] = "📘",
+    ["log.lua"] = "📘",
     ["utils.lua"] = "🔧",
     ["boot.lua"] = "🚀",
     ["init.lua"] = "🔄",

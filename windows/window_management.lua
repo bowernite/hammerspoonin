@@ -1,4 +1,4 @@
-require("log_utils")
+require("log")
 require("windows/window_utils")
 
 hs.window.animationDuration = 0
