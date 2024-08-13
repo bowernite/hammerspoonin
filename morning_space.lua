@@ -17,6 +17,7 @@
     Note: Requires appropriate Hammerspoon permissions.
 ]] --
 require("utils/utils")
+require("utils/caffeinate")
 
 local morningDelay = 10 -- 1.5 minutes in seconds
 local testModeDelay = 10 -- 10 seconds for test mode
@@ -155,14 +156,7 @@ local function applyMorningDelay()
     end
 end
 
-hs.caffeinate.watcher.new(function(eventType)
-    log("Morning Space: Caffeinate watcher event: " .. eventType)
-    if eventType == hs.caffeinate.watcher.screensDidUnlock or eventType ==
-        hs.caffeinate.watcher.screensDidWake then
-        log("Screen unlocked or system woke, applying morning delay")
-        applyMorningDelay()
-    end
-end):start()
+addWakeWatcher(function() applyMorningDelay() end)
 
 -- Function to toggle test mode
 local function toggleTestMode()

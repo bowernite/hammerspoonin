@@ -18,6 +18,7 @@ end
 local function formatDetailsForLog(details)
     local logMessage = ""
     for key, value in pairs(details) do
+        logMessage = logMessage .. "\t"
         if type(value) == "userdata" and value:frame() then
             if type(value.isScreen) == "function" and value:isScreen() then
                 logMessage = logMessage .. " " ..
@@ -115,12 +116,14 @@ local fileEmojis = {
     ["vivid_fix.lua"] = "💡",
     ["morning_space.lua"] = "🌅",
     ["reset_apps.lua"] = "🔄",
-    ["disconnect_from_wifi_when_on_ethernet.lua"] = "📶"
+    ["disconnect_from_wifi_when_on_ethernet.lua"] = "📶",
+    ["caffeinate.lua"] = "☕"
 }
 
 local lastLogTime = os.time()
 
-function log(message, details, styleOptions)
+-- Convenience logger function, with lots of useful functionality
+function log(message, details, styleOptions, level)
     -- Add newlines every 30 minutes, to visualize the time elapsed between logs
     local currentTime = os.time()
     local timeDiff = currentTime - lastLogTime
@@ -128,17 +131,17 @@ function log(message, details, styleOptions)
     local numNewLines = math.min(20, math.floor(timeDiff / thirtyMinutes))
     local newLines = string.rep("•\n", numNewLines)
 
-    local time = os.date("%I:%M %p"):gsub("^0", ""):gsub(" ", ""):lower()
+    local time = os.date("%I:%M:%S %p"):gsub("^0", ""):gsub(" ", ""):lower()
 
     -- Get the filename of the calling script
-    local filename = debug.getinfo(2, "S").source:match("^.+/(.+)$")
+    local stackLevel = level or 2
+    local filename = debug.getinfo(stackLevel, "S").source:match("^.+/(.+)$")
     local emoji = fileEmojis[filename] or "🔍"
 
     local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " ..
                            message
     if details then
-        logMessage = logMessage .. "\n\t" .. formatDetailsForLog(details) ..
-                         "\n"
+        logMessage = logMessage .. "\n" .. formatDetailsForLog(details) .. "\n"
     end
 
     local isBlackBackground = styleOptions and styleOptions.backgroundColor and
@@ -163,6 +166,24 @@ function log(message, details, styleOptions)
     lastLogTime = currentTime
 end
 
+-- Logger function for when we're going to do a concrete action (e.g. maximize a window, kill an app, etc.)
 function logAction(message, details)
-    log(message, details, {backgroundColor = {red = 0, green = 0, blue = 0}})
+    log(message, details, {backgroundColor = {red = 0, green = 0, blue = 0}}, 3)
 end
+
+-- Logger function for errors
+function logError(message, details)
+    log(message, details, {
+        color = {red = 1, green = 0, blue = 0},
+        backgroundColor = {red = 0.2, green = 0, blue = 0}
+    }, 3)
+end
+
+-- Logger function for warnings
+function logWarning(message, details)
+    log(message, details, {
+        color = {red = 1, green = 1, blue = 0},
+        backgroundColor = {red = 0.2, green = 0.2, blue = 0}
+    }, 3)
+end
+

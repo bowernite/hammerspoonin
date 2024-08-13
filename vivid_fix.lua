@@ -1,5 +1,6 @@
 require("utils/log")
 require("utils/utils")
+require("utils/caffeinate")
 
 -- Parameters:
 --   appName (string): The name of the application to restart.
@@ -43,7 +44,7 @@ local function restartVividIfNotNighttime()
 end
 
 -- Screen watcher to restart Vivid when a monitor is disconnected
-local screenWatcher = hs.screen.watcher.new(function()
+screenWatcher = hs.screen.watcher.new(function()
     local screenCount = #hs.screen.allScreens()
     if screenCount < previousScreenCount then
         log("🔆 Monitor disconnected; preparing to restart Vivid.")
@@ -55,19 +56,7 @@ previousScreenCount = #hs.screen.allScreens()
 
 screenWatcher:start()
 
--- Delay initial restart to prevent potential loop at startup
--- hs.timer.doAfter(1, function()
---     log(
---         "🔆 Initiating delayed restart of Vivid to prevent potential loop at startup")
---     restartVividIfNotNighttime()
--- end)
-
 handleFluxState()
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
--- Run flux on wake / computer unlock
-hs.caffeinate.watcher.new(function(event)
-    if event == hs.caffeinate.watcher.screensDidUnlock or event ==
-        hs.caffeinate.watcher.systemDidWake then handleFluxState() end
-end):start()
-
+addWakeWatcher(handleFluxState)
