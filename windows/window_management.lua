@@ -196,10 +196,11 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     -- end
 end)
 
-windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
+local function handleWindowEvent(window, eventType)
     if isWindowBlacklisted(window) then return end
 
-    log("Window moved", {window, screen = window:screen()})
+    log("Window event:" .. eventType .. "; adjusting window if necessary",
+        {window, screen = window:screen()})
 
     adjustWindowIfNecessary(window)
 
@@ -207,15 +208,28 @@ windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
 
     local windowID = window:id()
     maximizedWindows[windowID] = isWindowMaximized(window)
+end
+
+-- https://www.hammerspoon.org/docs/hs.window.filter.html
+windowWatcher:subscribe(hs.window.filter.windowMoved,
+                        function(window) handleWindowEvent(window, "moved") end)
+windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
+    handleWindowEvent(window, "focused")
 end)
 
-hs.screen.watcher.new(function()
-    local allWindows = hs.window.allWindows()
-    for _, window in ipairs(allWindows) do
-        if window:screen() == hs.screen.primaryScreen() then
-            adjustWindowIfNecessary(window)
+hs.screen.watcher.newWithActiveScreen(function()
+    log("newWithActiveScreen watcher called; adjusting windows", {
+        primaryScreen = hs.screen.primaryScreen(),
+        mainScreen = hs.screen.mainScreen()
+    })
+    hs.timer.doAfter(8, function()
+        local allWindows = hs.window.allWindows()
+        for _, window in ipairs(allWindows) do
+            if window:screen() == hs.screen.primaryScreen() then
+                adjustWindowIfNecessary(window)
+            end
         end
-    end
+    end)
 end):start()
 
 -- Initialize

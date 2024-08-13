@@ -64,7 +64,7 @@ function maximizeWindow(window)
             -- log("Window is maximized as expected", {window})
             return true -- Stop the timer if the window is maximized
         else
-            log("Window is not maximized as expected, correcting", {window})
+            log("(hack) Re-maximizing window, first attempt failed", {window})
             window:setTopLeft({x = 0, y = 0})
             window:maximize()
             hs.timer.doAfter(0.25, function() window:maximize() end)

@@ -35,6 +35,7 @@ local function formatDetailsForLog(details)
                              (type(key) == "number" and "" or (key .. ": ")) ..
                              tostring(value)
         end
+        logMessage = logMessage .. "\n"
     end
     return logMessage
 end
