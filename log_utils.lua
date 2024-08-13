@@ -53,40 +53,54 @@ local function generateColorFromMessage(message)
     }
 end
 
--- Ensure the color has enough contrast with the white background
-local function ensureContrast(color)
+-- Ensure the color has enough contrast with the given background
+local function ensureContrast(color, isBlackBackground)
     local function luminance(r, g, b)
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
     end
 
-    local function adjustColor(color)
+    local function adjustColor(color, isBlackBackground)
         local lum = luminance(color.red, color.green, color.blue)
-        if lum > 0.6 then
-            -- If the color is too light, darken it more aggressively
-            return {
-                red = color.red * 0.5,
-                green = color.green * 0.5,
-                blue = color.blue * 0.5
-            }
-        elseif lum < 0.3 then
-            -- If the color is too dark, lighten it more aggressively
-            return {
-                red = color.red + (1 - color.red) * 0.5,
-                green = color.green + (1 - color.green) * 0.5,
-                blue = color.blue + (1 - color.blue) * 0.5
-            }
+        if isBlackBackground then
+            if lum < 0.5 then
+                -- If the color is too dark for a black background, lighten it
+                return {
+                    red = color.red + (1 - color.red) * 0.5,
+                    green = color.green + (1 - color.green) * 0.5,
+                    blue = color.blue + (1 - color.blue) * 0.5
+                }
+            end
+        else
+            if lum > 0.6 then
+                -- If the color is too light for a white background, darken it
+                return {
+                    red = color.red * 0.5,
+                    green = color.green * 0.5,
+                    blue = color.blue * 0.5
+                }
+            elseif lum < 0.3 then
+                -- If the color is too dark for a white background, lighten it
+                return {
+                    red = color.red + (1 - color.red) * 0.5,
+                    green = color.green + (1 - color.green) * 0.5,
+                    blue = color.blue + (1 - color.blue) * 0.5
+                }
+            end
         end
         return color
     end
 
-    local adjustedColor = adjustColor(color)
-    -- Adjust the color until it has enough contrast
+    local adjustedColor = adjustColor(color, isBlackBackground)
     local lum = luminance(adjustedColor.red, adjustedColor.green,
                           adjustedColor.blue)
-    -- while lum <= 0.3 or lum >= 0.7 do
-    adjustedColor = adjustColor(adjustedColor)
-    lum = luminance(adjustedColor.red, adjustedColor.green, adjustedColor.blue)
-    -- end
+
+    -- Adjust further if needed
+    if isBlackBackground and lum < 0.4 then
+        adjustedColor = adjustColor(adjustedColor, isBlackBackground)
+    elseif not isBlackBackground and (lum < 0.3 or lum > 0.7) then
+        adjustedColor = adjustColor(adjustedColor, isBlackBackground)
+    end
+
     return adjustedColor
 end
 
@@ -104,7 +118,7 @@ local fileEmojis = {
     ["disconnect_from_wifi_when_on_ethernet.lua"] = "📶"
 }
 
-function log(message, details)
+function log(message, details, styleOptions)
     local time = os.date("%I:%M %p"):gsub("^0", ""):gsub(" ", ""):lower()
 
     -- Get the filename of the calling script
@@ -117,9 +131,26 @@ function log(message, details)
                          "\n"
     end
 
-    local color = ensureContrast(generateColorFromMessage(message))
-    hs.console.printStyledtext(hs.styledtext.new(logMessage, {
-        color = color,
-        font = {name = "Menlo", size = 18}
-    }))
+    local isBlackBackground = styleOptions and styleOptions.backgroundColor and
+                                  styleOptions.backgroundColor.red == 0 and
+                                  styleOptions.backgroundColor.green == 0 and
+                                  styleOptions.backgroundColor.blue == 0
+
+    local color = ensureContrast(generateColorFromMessage(message),
+                                 isBlackBackground)
+
+    local defaultStyle = {color = color, font = {name = "Menlo", size = 18}}
+
+    -- Merge defaultStyle with styleOptions
+    local finalStyle = {}
+    for k, v in pairs(defaultStyle) do finalStyle[k] = v end
+    if styleOptions then
+        for k, v in pairs(styleOptions) do finalStyle[k] = v end
+    end
+
+    hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
+end
+
+function logAction(message, details)
+    log(message, details, {backgroundColor = {red = 0, green = 0, blue = 0}})
 end

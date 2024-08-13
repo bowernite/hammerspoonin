@@ -45,13 +45,13 @@ function isMaximizable(window)
 end
 
 function maximizeWindow(window)
-    log("Maximizing window", {window})
-
     if not isMaximizable(window) then
         log("Window is not maximizable; centering instead", {window})
         centerWindow(window)
         return false
     end
+
+    logAction("Maximizing window", {window})
 
     window:setTopLeft({x = 0, y = 0})
     window:maximize()
@@ -64,7 +64,8 @@ function maximizeWindow(window)
             -- log("Window is maximized as expected", {window})
             return true -- Stop the timer if the window is maximized
         else
-            log("(hack) Re-maximizing window, first attempt failed", {window})
+            logAction("(hack) Re-maximizing window, first attempt failed",
+                      {window})
             window:setTopLeft({x = 0, y = 0})
             window:maximize()
             hs.timer.doAfter(0.25, function() window:maximize() end)
@@ -90,6 +91,6 @@ function centerWindow(window)
     end
 
     local windowID = window:id()
-    log("Centering window", {window})
+    logAction("Centering window", {window})
     window:centerOnScreen(nil, false, 0) -- Center on the current screen with animation
 end
