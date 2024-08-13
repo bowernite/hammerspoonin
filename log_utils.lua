@@ -118,14 +118,24 @@ local fileEmojis = {
     ["disconnect_from_wifi_when_on_ethernet.lua"] = "📶"
 }
 
+local lastLogTime = os.time()
+
 function log(message, details, styleOptions)
+    -- Add newlines every 30 minutes, to visualize the time elapsed between logs
+    local currentTime = os.time()
+    local timeDiff = currentTime - lastLogTime
+    local thirtyMinutes = 1800 -- 30 minutes in seconds
+    local numNewLines = math.min(20, math.floor(timeDiff / thirtyMinutes))
+    local newLines = string.rep("•\n", numNewLines)
+
     local time = os.date("%I:%M %p"):gsub("^0", ""):gsub(" ", ""):lower()
 
     -- Get the filename of the calling script
     local filename = debug.getinfo(2, "S").source:match("^.+/(.+)$")
     local emoji = fileEmojis[filename] or "🔍"
 
-    local logMessage = "[" .. time .. "] " .. emoji .. " " .. message
+    local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " ..
+                           message
     if details then
         logMessage = logMessage .. "\n\t" .. formatDetailsForLog(details) ..
                          "\n"
@@ -149,6 +159,8 @@ function log(message, details, styleOptions)
     end
 
     hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
+
+    lastLogTime = currentTime
 end
 
 function logAction(message, details)
