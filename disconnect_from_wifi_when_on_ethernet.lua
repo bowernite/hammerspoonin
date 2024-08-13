@@ -1,4 +1,4 @@
-require("log")
+require("utils/log")
 
 -----------------------------------------------------------------------------------------------
 -- Toggle Wifi based on Ethernet status and Screen Lock status

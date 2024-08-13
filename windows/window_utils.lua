@@ -1,4 +1,4 @@
-require("log")
+require("utils/log")
 
 function isMainWindow(window)
     local role = window:role()

@@ -16,8 +16,7 @@
 
     Note: Requires appropriate Hammerspoon permissions.
 ]] --
-require("utils")
-require("log")
+require("utils/utils")
 
 local morningDelay = 10 -- 1.5 minutes in seconds
 local testModeDelay = 10 -- 10 seconds for test mode

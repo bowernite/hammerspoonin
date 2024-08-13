@@ -1,4 +1,4 @@
-require("log")
+require("utils/log")
 
 function isProcessRunning(processName)
     local command = "pgrep " .. processName

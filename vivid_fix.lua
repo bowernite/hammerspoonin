@@ -1,5 +1,5 @@
-require("log")
-require("utils")
+require("utils/log")
+require("utils/utils")
 
 -- Parameters:
 --   appName (string): The name of the application to restart.
