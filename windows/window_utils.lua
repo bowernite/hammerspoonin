@@ -73,8 +73,10 @@ function maximizeWindow(window)
     end
 
     local timer
+    local iterations = 0
     timer = hs.timer.doEvery(1, function()
-        if checkMaximized() then timer:stop() end
+        if checkMaximized() or iterations >= 3 then timer:stop() end
+        iterations = iterations + 1
     end)
 
     hs.timer.doAfter(10, function() timer:stop() end) -- Stop checking after 10 seconds
