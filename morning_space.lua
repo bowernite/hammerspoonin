@@ -19,7 +19,7 @@
 require("utils/utils")
 require("utils/caffeinate")
 
-local morningDelay = 10 -- 1.5 minutes in seconds
+local morningDelay = 90 -- 1.5 minutes in seconds
 local testModeDelay = 10 -- 10 seconds for test mode
 local startTime = "6:30AM"
 local endTime = "9:30AM"
