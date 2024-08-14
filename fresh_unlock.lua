@@ -1,8 +1,6 @@
 require("utils/utils")
 require("utils/caffeinate")
 
-hs.application.runningApplications()
-
 -- Function to hide all visible apps
 local function hideAllApps()
     local createdNewFinderWindow = false

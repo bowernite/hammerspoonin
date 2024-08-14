@@ -9,6 +9,7 @@ local styledtext = hs.styledtext
 local alert = hs.alert
 local fs = hs.fs
 local notify = hs.notify
+local application = hs.application
 
 require("vivid_fix")
 require("reset_apps")
