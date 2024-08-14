@@ -8,6 +8,7 @@ local fnutils = hs.fnutils
 local styledtext = hs.styledtext
 local alert = hs.alert
 local fs = hs.fs
+local notify = hs.notify
 
 require("vivid_fix")
 require("reset_apps")

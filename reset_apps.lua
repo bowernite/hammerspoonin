@@ -162,6 +162,7 @@ local function resetAppsEveryMorning()
             {hasResetToday = hasResetToday, currentTime = currentTime})
         if not hasResetToday and currentTime.hour >= 4 then
             log("Resetting apps after first wake past 4 AM")
+            hs.alert.show("Doing morning reset...")
             resetApps(true)
             hasResetToday = true
         end
