@@ -1,4 +1,5 @@
 require("utils/utils")
+require("utils/caffeinate")
 
 hs.application.runningApplications()
 
@@ -7,6 +8,7 @@ local function hideAllApps()
     local createdNewFinderWindow = false
 
     -- Create a new Finder window if it doesn't already exist
+    logAction("Creating a new Finder window")
     local finderApp = hs.application.get("Finder")
     if not finderApp then
         hs.application.launchOrFocus("Finder")
@@ -35,13 +37,14 @@ local function hideAllApps()
     end
 
     -- Close the Finder window if we created one
-    if createdNewFinderWindow then
-        finderApp = hs.application.get("Finder")
-        if finderApp then
-            local finderWindows = finderApp:allWindows()
-            if #finderWindows > 0 then finderWindows[1]:close() end
-        end
-    end
+    -- if createdNewFinderWindow then
+    --     logAction("Closing the Finder window")
+    --     finderApp = hs.application.get("Finder")
+    --     if finderApp then
+    --         local finderWindows = finderApp:allWindows()
+    --         if #finderWindows > 0 then finderWindows[1]:close() end
+    --     end
+    -- end
 end
 
 -- Function to sleep display and hide apps
@@ -59,10 +62,7 @@ local function hideAppsAndLockDisplay()
     hs.caffeinate.lockScreen()
 end
 
--- Set up hotkey to sleep display and hide apps
-hs.hotkey.bind({"cmd", "ctrl"}, "w", sleepDisplayAndHideApps)
+-- hs.hotkey.bind({"cmd", "ctrl"}, "w", sleepDisplayAndHideApps)
+-- hs.hotkey.bind({"cmd", "ctrl"}, "q", hideAppsAndLockDisplay)
 
--- Set up hotkey to hide apps and lock display
-hs.hotkey.bind({"cmd", "ctrl"}, "q", hideAppsAndLockDisplay)
-
--- addWakeWatcher(hideAllApps)
+addSleepWatcher(hideAllApps)
