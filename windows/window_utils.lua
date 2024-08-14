@@ -74,8 +74,8 @@ function maximizeWindow(window)
 
     local timer
     local iterations = 0
-    timer = hs.timer.doEvery(1, function()
-        if checkMaximized() or iterations >= 3 then timer:stop() end
+    timer = hs.timer.doEvery(0.2, function()
+        if checkMaximized() or iterations >= 2 then timer:stop() end
         iterations = iterations + 1
     end)
 
