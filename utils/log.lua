@@ -177,6 +177,7 @@ function logError(message, details)
         color = {red = 1, green = 0, blue = 0},
         backgroundColor = {red = 0.2, green = 0, blue = 0}
     }, 3)
+    hs.notify.show("❌ Hammerspoon error", "", details)
 end
 
 -- Logger function for warnings
