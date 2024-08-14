@@ -47,6 +47,8 @@ local function hideAllApps()
     -- end
 end
 
+addSleepWatcher(hideAllApps)
+
 -- Function to sleep display and hide apps
 -- local function sleepDisplayAndHideApps()
 --     hideAllApps()
@@ -63,5 +65,3 @@ end
 
 -- hs.hotkey.bind({"cmd", "ctrl"}, "w", sleepDisplayAndHideApps)
 -- hs.hotkey.bind({"cmd", "ctrl"}, "q", hideAppsAndLockDisplay)
-
-addSleepWatcher(hideAllApps)
