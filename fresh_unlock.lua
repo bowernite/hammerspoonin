@@ -48,19 +48,18 @@ local function hideAllApps()
 end
 
 -- Function to sleep display and hide apps
-local function sleepDisplayAndHideApps()
-    hideAllApps()
+-- local function sleepDisplayAndHideApps()
+--     hideAllApps()
+--     logAction("Sleeping display")
+--     hs.caffeinate.systemSleep()
+-- end
 
-    logAction("Sleeping display")
-    hs.caffeinate.systemSleep()
-end
-
--- Function to hide apps and lock display
-local function hideAppsAndLockDisplay()
-    hideAllApps()
-    logAction("Locking display")
-    hs.caffeinate.lockScreen()
-end
+-- -- Function to hide apps and lock display
+-- local function hideAppsAndLockDisplay()
+--     hideAllApps()
+--     logAction("Locking display")
+--     hs.caffeinate.lockScreen()
+-- end
 
 -- hs.hotkey.bind({"cmd", "ctrl"}, "w", sleepDisplayAndHideApps)
 -- hs.hotkey.bind({"cmd", "ctrl"}, "q", hideAppsAndLockDisplay)
