@@ -2,19 +2,8 @@ require("utils/utils")
 require("utils/caffeinate")
 
 -- Function to hide all visible apps
-local function hideAllApps()
+function hideAllApps()
     local createdNewFinderWindow = false
-
-    -- Create a new Finder window if it doesn't already exist
-    logAction("Creating a new Finder window")
-    local finderApp = hs.application.get("Finder")
-    if not finderApp then
-        hs.application.launchOrFocus("Finder")
-        createdNewFinderWindow = true
-    elseif #finderApp:allWindows() == 0 then
-        finderApp:selectMenuItem({"File", "New Finder Window"})
-        createdNewFinderWindow = true
-    end
 
     logAction("Hiding all visible apps")
     local visibleApps =
@@ -33,19 +22,11 @@ local function hideAllApps()
         logAction("Hiding Hammerspoon")
         hammerspoonApp:hide()
     end
-
-    -- Close the Finder window if we created one
-    -- if createdNewFinderWindow then
-    --     logAction("Closing the Finder window")
-    --     finderApp = hs.application.get("Finder")
-    --     if finderApp then
-    --         local finderWindows = finderApp:allWindows()
-    --         if #finderWindows > 0 then finderWindows[1]:close() end
-    --     end
-    -- end
 end
 
 addSleepWatcher(hideAllApps)
+addWakeWatcher(
+    function() hs.timer.doAfter(0.1, function() hideAllApps() end) end)
 
 -- Function to sleep display and hide apps
 -- local function sleepDisplayAndHideApps()
