@@ -117,7 +117,9 @@ local fileEmojis = {
     ["morning_space.lua"] = "🌅",
     ["reset_apps.lua"] = "🔄",
     ["disconnect_from_wifi_when_on_ethernet.lua"] = "📶",
-    ["caffeinate.lua"] = "☕"
+    ["caffeinate.lua"] = "☕",
+    ["app_utils.lua"] = "📱",
+    ["fresh_unlock.lua"] = "🔓"
 }
 
 local lastLogTime = os.time()

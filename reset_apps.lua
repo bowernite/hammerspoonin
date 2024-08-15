@@ -1,3 +1,5 @@
+require("utils/app_utils")
+
 local essentialApps = {
     "Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders",
     "Bear", "Vivid", "Google Chrome", "Notion", "Trello", "Hammerspoon"
@@ -9,43 +11,6 @@ local appsToNotKill = {"Hammerspoon", "Finder"}
 --     "Rectangle", "Amphetamine", "Homerow", "MonitorControl", "Hammerspoon",
 --     "Finder", "CleanShot X", "Online", "Keysmith"
 -- }
-
-local function killAppsInDock()
-    local appsInDock = hs.fnutils.filter(hs.application.runningApplications(),
-                                         function(app) return app:kind() == 1 end)
-    local appNamesInDock = hs.fnutils.map(appsInDock,
-                                          function(app) return app:name() end)
-    log("Killing apps in dock: " .. table.concat(appNamesInDock, ", "))
-    for _, app in ipairs(appsInDock) do
-        local appName = app:name()
-        if not hs.fnutils.contains(appsToNotKill, appName) then
-            logAction("Killing app: " .. appName)
-            app:kill()
-        end
-    end
-end
-
-local function hideAppWhenAvailable(appName)
-    local iterations = 0
-    local maxIterations = 30
-    local timer
-
-    timer = hs.timer.new(2, function()
-        local app = hs.application.get(appName)
-        if app then
-            logAction("Hiding app: " .. appName)
-            app:hide()
-            timer:stop()
-        elseif iterations >= maxIterations then
-            logWarning("Failed to hide " .. appName .. " after " ..
-                           maxIterations .. " iterations")
-            timer:stop()
-        end
-        iterations = iterations + 1
-    end)
-
-    timer:start()
-end
 
 local function startEssentialApps(essentialApps)
     logAction("Starting essential apps")
@@ -61,18 +26,6 @@ local function startEssentialApps(essentialApps)
     for _, appName in ipairs(essentialApps) do
         if not hs.fnutils.contains(appsToNotKill, appName) then
             startApp(appName)
-        end
-    end
-end
-
-local function closeAllFinderWindows()
-    logAction("Closing all Finder windows")
-    local finder = hs.application.get("Finder")
-    if finder then
-        local windows = finder:allWindows()
-        for i, window in ipairs(windows) do
-            log("Finder window " .. i .. ": " .. window:title())
-            window:close()
         end
     end
 end
@@ -93,7 +46,7 @@ local function minimizeCursorWindows()
         local iterations = 0
 
         local timer
-        timer = hs.timer.new(2, function()
+        poll(function()
             log("Minimizing cursor windows check")
             if not minimizeExecuted and hs.application.get("Cursor") then
                 logAction("Minimizing cursor windows")
@@ -105,25 +58,12 @@ local function minimizeCursorWindows()
                     end
                 end
                 minimizeExecuted = true
-                timer:stop()
-            elseif iterations >= 30 then
-                log("Failed to minimize cursor windows after 30 iterations")
-                timer:stop()
+                return true -- Stop polling
             end
-            iterations = iterations + 1
-        end)
+            return false -- Continue polling
+        end, 2, 30)
 
         timer:start()
-    end
-end
-
-local function openNewFinderWindow()
-    logAction("Opening new Finder window")
-    local finder = hs.application.get("Finder")
-    if finder then
-        finder:selectMenuItem({"File", "New Finder Window"})
-    else
-        hs.application.open("Finder")
     end
 end
 
@@ -137,10 +77,6 @@ local function resetApps(restartApps)
     openDefaultRepos()
     minimizeCursorWindows()
 
-    -- openNewFinderWindow()
-    -- local oneSecondInMicroseconds = 1000000
-    -- hs.timer.usleep(oneSecondInMicroseconds)
-    -- for _, appName in ipairs(essentialApps) do hideAppWhenAvailable(appName) end
     closeAllFinderWindows()
 
     hs.alert.show("Reset apps")

@@ -44,7 +44,16 @@ function isMaximizable(window)
     return true
 end
 
+function isMaximized(window)
+    return window:isFullScreen() or
+               (window:frame().w == window:screen():frame().w and
+                   window:frame().h == window:screen():frame().h)
+end
+
+-- Maximizes the given window. Returns true if the window was maximized, false if it was not.
 function maximizeWindow(window)
+    if isMaximized(window) then return true end
+
     if not isMaximizable(window) then
         log("Window is not maximizable; centering instead", {window})
         centerWindow(window)
@@ -56,30 +65,21 @@ function maximizeWindow(window)
     window:setTopLeft({x = 0, y = 0})
     window:maximize()
 
-    local checkMaximized = function()
+    poll(function()
         local maximized = window:isFullScreen() or
                               (window:frame().w == window:screen():frame().w and
                                   window:frame().h == window:screen():frame().h)
         if maximized then
-            -- log("Window is maximized as expected", {window})
-            return true -- Stop the timer if the window is maximized
+            return true
         else
             logAction("(hack) Re-maximizing window, first attempt failed",
                       {window})
             window:setTopLeft({x = 0, y = 0})
             window:maximize()
-            hs.timer.doAfter(0.25, function() window:maximize() end)
         end
-    end
-
-    local timer
-    local iterations = 0
-    timer = hs.timer.doEvery(0.2, function()
-        if checkMaximized() or iterations >= 2 then timer:stop() end
-        iterations = iterations + 1
+    end, 0.2, 3, function()
+        logWarning("Failed to maximize window after 3 attempts")
     end)
-
-    hs.timer.doAfter(10, function() timer:stop() end) -- Stop checking after 10 seconds
 
     maximizedWindows[window:id()] = true
 
@@ -88,9 +88,11 @@ end
 
 function centerWindow(window)
     if not window then
-        log("No window provided for centering")
+        logWarning("No window provided for centering")
         return
     end
+
+    if isWindowCentered(window) then return end
 
     local windowID = window:id()
     logAction("Centering window", {window})

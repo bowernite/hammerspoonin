@@ -18,15 +18,12 @@ function getCurrentTimeInfo()
     local currentDate = os.date("*t", currentTime)
     local currentHour = currentDate.hour
     local currentMinute = currentDate.min
-    return {
-        time = currentTime,
-        hour = currentHour,
-        minute = currentMinute
-    }
+    return {time = currentTime, hour = currentHour, minute = currentMinute}
 end
 
 function parseTime(timeString)
-    local hour, minute, period = timeString:match("(%d+):?(%d*)%s*([AaPp]?[Mm]?)")
+    local hour, minute, period = timeString:match(
+                                     "(%d+):?(%d*)%s*([AaPp]?[Mm]?)")
     hour = tonumber(hour)
     minute = tonumber(minute) or 0
 
@@ -47,9 +44,10 @@ function isWithinTimeWindow(startTime, endTime)
     local startMinutes = parseTime(startTime)
     local endMinutes = parseTime(endTime)
 
-    log(string.format("Time window check: Start=%s (%d), End=%s (%d), Current=%02d:%02d (%d)", 
-        startTime, startMinutes, endTime, endMinutes,
-        timeInfo.hour, timeInfo.minute, currentMinutes))
+    log(string.format(
+            "Time window check: Start=%s (%d), End=%s (%d), Current=%02d:%02d (%d)",
+            startTime, startMinutes, endTime, endMinutes, timeInfo.hour,
+            timeInfo.minute, currentMinutes))
     if startMinutes < endMinutes then
         return currentMinutes >= startMinutes and currentMinutes <= endMinutes
     else
@@ -57,6 +55,26 @@ function isWithinTimeWindow(startTime, endTime)
     end
 end
 
-function isNighttime()
-    return isWithinTimeWindow("7pm", "5am")
+function isNighttime() return isWithinTimeWindow("7pm", "5am") end
+
+function poll(fn, intervalInSeconds, maxAttempts, onMaxAttemptsReached)
+    maxAttempts = maxAttempts or 3
+    local attempts = 0
+    local timer
+
+    local function executeAndSchedule()
+        if attempts < maxAttempts then
+            if fn() then
+                if timer then timer:stop() end
+                return
+            end
+            attempts = attempts + 1
+            timer = hs.timer.doAfter(intervalInSeconds, executeAndSchedule)
+        else
+            if timer then timer:stop() end
+            if onMaxAttemptsReached then onMaxAttemptsReached() end
+        end
+    end
+
+    executeAndSchedule()
 end

@@ -1,28 +1,6 @@
 require("utils/utils")
 require("utils/caffeinate")
-
--- Function to hide all visible apps
-function hideAllApps()
-    local createdNewFinderWindow = false
-
-    logAction("Hiding all visible apps")
-    local visibleApps =
-        hs.window.filter.new():setAppFilter("", {visible = true}):getWindows()
-    for _, window in ipairs(visibleApps) do
-        local app = window:application()
-
-        if app then
-            logAction("Hiding app: " .. app:name())
-            app:hide()
-        end
-    end
-    -- Hide Hammerspoon
-    local hammerspoonApp = hs.application.get("Hammerspoon")
-    if hammerspoonApp then
-        logAction("Hiding Hammerspoon")
-        hammerspoonApp:hide()
-    end
-end
+require("utils/app_utils")
 
 addSleepWatcher(hideAllApps)
 addWakeWatcher(
