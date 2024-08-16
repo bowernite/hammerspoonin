@@ -4,7 +4,7 @@ local essentialApps = {
     "Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders",
     "Bear", "Vivid", "Google Chrome", "Notion", "Trello", "Hammerspoon"
 }
-local appsToNotKill = {"Hammerspoon", "Finder"}
+local appsToNotKill = {"Hammerspoon", "Finder", "kitty"}
 
 -- local backgroundApps = {
 --     "Flux", "superwhisper", "Alfred", "Alfred 5", "Karabiner-Elements",
