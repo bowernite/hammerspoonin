@@ -55,25 +55,31 @@ end
 
 local wasPrimaryDisplayBuiltIn = isPrimaryDisplayBuiltIn()
 
-screenWatcher = hs.screen.watcher.new(function()
+local function handlePowerSourceChange()
     local isPrimaryBuiltIn = isPrimaryDisplayBuiltIn()
-    log("Screen watcher triggered", {
+    log("Power source changed; checking to see if we need to restart Vivid.", {
         isPrimaryBuiltIn = isPrimaryBuiltIn,
         wasPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn
     })
 
     if isPrimaryBuiltIn and not wasPrimaryDisplayBuiltIn then
         log("🔆 Switched to built-in display; preparing to restart Vivid.")
-        hs.timer.doAfter(5, function() restartVividIfNotNighttime() end)
+        hs.timer.doAfter(2, function() restartVividIfNotNighttime() end)
     end
 
     wasPrimaryDisplayBuiltIn = isPrimaryBuiltIn
+end
+
+powerWatcher = hs.battery.watcher.new(function()
+    if not hs.battery.powerSource() == "Battery Power" then
+        handlePowerSourceChange()
+    end
 end)
+
+powerWatcher:start()
 
 log("Screen watcher started",
     {isPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn})
-
-screenWatcher:start()
 
 handleFluxState()
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
