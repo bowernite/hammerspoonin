@@ -1,5 +1,6 @@
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
+    if not screen then return "(none)" end
     local screenFrame = screen:frame()
     return string.format("%s (Dimensions: w=%d, h=%d)", screen:name(),
                          screenFrame.w, screenFrame.h)
@@ -7,6 +8,7 @@ end
 
 -- Utility function to format window dimensions and coordinates
 local function formatWindowForLog(window)
+    if not window then return "(none)" end
     local windowFrame = window:frame()
     return string.format(
                "%s - %s (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)",
@@ -19,22 +21,25 @@ local function formatDetailsForLog(details)
     local logMessage = ""
     for key, value in pairs(details) do
         logMessage = logMessage .. "\t"
-        if type(value) == "userdata" and value:frame() then
+        if type(value) == "userdata" and value and value.frame and value:frame() then
             if type(value.isScreen) == "function" and value:isScreen() then
-                logMessage = logMessage .. " " ..
+                logMessage = logMessage ..
                                  (type(key) == "number" and "" or (key .. ": ")) ..
                                  formatScreenForLog(value)
             elseif type(value.isWindow) == "function" and value:isWindow() then
-                logMessage = logMessage .. " " ..
+                logMessage = logMessage ..
                                  (type(key) == "number" and "" or (key .. ": ")) ..
                                  formatWindowForLog(value)
-
-                if value:title() == "" then return logMessage end
+            else
+                logMessage = logMessage ..
+                                 (type(key) == "number" and "" or (key .. ": ")) ..
+                                 (value ~= nil and tostring(value) or "(none)")
             end
+            logMessage = logMessage .. " (type:" .. type(value) .. ")"
         else
             logMessage = logMessage ..
                              (type(key) == "number" and "" or (key .. ": ")) ..
-                             tostring(value)
+                             (value ~= nil and tostring(value) or "(none)")
         end
         logMessage = logMessage .. "\n"
     end
