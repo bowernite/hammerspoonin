@@ -156,7 +156,7 @@ local function applyMorningDelay()
     end
 end
 
-addWakeWatcher(function() applyMorningDelay() end)
+-- addWakeWatcher(function() applyMorningDelay() end)
 
 -- Function to toggle test mode
 local function toggleTestMode()
