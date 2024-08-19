@@ -22,6 +22,7 @@ function hideAllApps()
 end
 
 function killAppsInDock()
+    local appsToNotKill = {"Hammerspoon", "Finder", "kitty"}
     local appsInDock = hs.fnutils.filter(hs.application.runningApplications(),
                                          function(app) return app:kind() == 1 end)
     local appNamesInDock = hs.fnutils.map(appsInDock,

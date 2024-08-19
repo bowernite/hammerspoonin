@@ -4,7 +4,6 @@ local essentialApps = {
     "Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders",
     "Bear", "Vivid", "Google Chrome", "Notion", "Trello", "Hammerspoon"
 }
-local appsToNotKill = {"Hammerspoon", "Finder", "kitty"}
 
 -- local backgroundApps = {
 --     "Flux", "superwhisper", "Alfred", "Alfred 5", "Karabiner-Elements",
@@ -15,19 +14,19 @@ local appsToNotKill = {"Hammerspoon", "Finder", "kitty"}
 local function startEssentialApps(essentialApps)
     logAction("Starting essential apps")
     local startApp = function(appName)
-        hs.timer.doAfter(0.1, function()
-            logAction("Starting app: " .. appName)
-            hs.application.open(appName, 0, true)
-            logAction("App is done starting; hiding: " .. appName)
-            hideAppWhenAvailable(appName)
-        end)
-    end
-
-    for _, appName in ipairs(essentialApps) do
-        if not hs.fnutils.contains(appsToNotKill, appName) then
-            startApp(appName)
+        if not hs.application.get(appName) then
+            hs.timer.doAfter(0.1, function()
+                logAction("Starting app: " .. appName)
+                hs.application.open(appName, 0, true)
+                logAction("App is done starting; hiding: " .. appName)
+                hideAppWhenAvailable(appName)
+            end)
+        else
+            log("App already running; not starting: " .. appName)
         end
     end
+
+    for _, appName in ipairs(essentialApps) do startApp(appName) end
 end
 
 local function openDefaultRepos()
