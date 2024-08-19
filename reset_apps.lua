@@ -104,6 +104,6 @@ local function resetAppsEveryMorning()
     end)
 end
 
--- resetAppsEveryMorning()
+resetAppsEveryMorning()
 
 hs.hotkey.bind({"cmd", "alt"}, "K", function() resetApps(true) end)

@@ -200,7 +200,7 @@ local function handleWindowEvent(window, eventType)
     if isWindowBlacklisted(window) then return end
 
     log("Window event:" .. eventType .. "; adjusting window if necessary",
-        {window, screen = window:screen()})
+        {window = window, screen = window:screen()})
 
     adjustWindowIfNecessary(window)
 

@@ -43,16 +43,35 @@ local function restartVividIfNotNighttime()
     if not isNighttime() then killAndRestartApp("Vivid") end
 end
 
--- Screen watcher to restart Vivid when a monitor is disconnected
+-- Screen watcher to restart Vivid when switching to built-in display
+local BUILTIN_DISPLAY_NAME = "Built-in Retina Display"
+
+local function isPrimaryDisplayBuiltIn()
+    local primaryDisplay = hs.screen.primaryScreen()
+    log("Checking if primary display is built-in",
+        {primaryDisplay = primaryDisplay})
+    return primaryDisplay and primaryDisplay:name() == BUILTIN_DISPLAY_NAME
+end
+
+local wasPrimaryDisplayBuiltIn = isPrimaryDisplayBuiltIn()
+
 screenWatcher = hs.screen.watcher.new(function()
-    local screenCount = #hs.screen.allScreens()
-    if screenCount < previousScreenCount then
-        log("🔆 Monitor disconnected; preparing to restart Vivid.")
+    local isPrimaryBuiltIn = isPrimaryDisplayBuiltIn()
+    log("Screen watcher triggered", {
+        isPrimaryBuiltIn = isPrimaryBuiltIn,
+        wasPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn
+    })
+
+    if isPrimaryBuiltIn and not wasPrimaryDisplayBuiltIn then
+        log("🔆 Switched to built-in display; preparing to restart Vivid.")
         hs.timer.doAfter(5, function() restartVividIfNotNighttime() end)
     end
-    previousScreenCount = screenCount
+
+    wasPrimaryDisplayBuiltIn = isPrimaryBuiltIn
 end)
-previousScreenCount = #hs.screen.allScreens()
+
+log("Screen watcher started",
+    {isPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn})
 
 screenWatcher:start()
 
