@@ -113,6 +113,7 @@ local function applyMorningDelay()
     local isWithinTimeWindow = isWithinTimeWindow(startTime, endTime)
     local isEnoughTimeSinceLastDelay = timeSinceLastDelay >= 5400
     local shouldApplyDelay = isWithinTimeWindow and isEnoughTimeSinceLastDelay
+
     if shouldApplyDelay or isTestMode then
         log("Delay conditions met, applying delay")
         local message = showDelayMessage()
@@ -153,10 +154,13 @@ local function applyMorningDelay()
         lastDelayTime = currentTime
     else
         log("Delay conditions not met, skipping delay")
+        clearActiveBlocking()  -- Ensure all blocking is cleared when outside the time window
     end
 end
 
--- addWakeWatcher(function() applyMorningDelay() end)
+addWakeWatcher(function() 
+    hs.timer.doAfter(0.1, applyMorningDelay)  -- Slight delay to ensure system is fully awake
+end)
 
 -- Function to toggle test mode
 local function toggleTestMode()

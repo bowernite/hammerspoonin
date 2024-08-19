@@ -2,9 +2,19 @@ require("utils/utils")
 require("utils/caffeinate")
 require("utils/app_utils")
 
-addSleepWatcher(hideAllApps)
-addWakeWatcher(
-    function() hs.timer.doAfter(0.1, function() hideAllApps() end) end)
+local lastHideTime = 0
+local ONE_MINUTE = 60
+
+local function throttledHideAllApps()
+    local currentTime = os.time()
+    if currentTime - lastHideTime >= ONE_MINUTE then
+        hideAllApps()
+        lastHideTime = currentTime
+    end
+end
+
+addSleepWatcher(throttledHideAllApps)
+addWakeWatcher(function() hs.timer.doAfter(0.1, throttledHideAllApps) end)
 
 -- Function to sleep display and hide apps
 -- local function sleepDisplayAndHideApps()
