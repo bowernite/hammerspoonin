@@ -69,10 +69,10 @@ function adjustWindowIfNecessary(window)
         return
     end
 
-    if window:screen():name():lower():match("built%-in") then
-        log("Window is on MacBook's built-in display; not adjusting", {window})
-        return
-    end
+    -- if window:screen():name():lower():match("built%-in") then
+    --     log("Window is on MacBook's built-in display; not adjusting", {window})
+    --     return
+    -- end
 
     local windowID, currentScreenID = window:id(), window:screen():id()
 
