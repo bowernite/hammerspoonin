@@ -1,13 +1,7 @@
 require("utils/app_utils")
 require("boot")
 
--- local backgroundApps = {
---     "Flux", "superwhisper", "Alfred", "Alfred 5", "Karabiner-Elements",
---     "Rectangle", "Amphetamine", "Homerow", "MonitorControl", "Hammerspoon",
---     "Finder", "CleanShot X", "Online", "Keysmith"
--- }
-
-local function resetApps(restartApps)
+local function resetApps()
     log("Initiating app reset sequence")
 
     killAppsInDock()
