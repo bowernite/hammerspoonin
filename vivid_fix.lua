@@ -1,6 +1,7 @@
 require("utils/log")
 require("utils/utils")
 require("utils/caffeinate")
+require("utils/screen_utils")
 
 -- Parameters:
 --   appName (string): The name of the application to restart.
@@ -24,15 +25,13 @@ local function handleFluxState()
     log("Handle flux state")
     if isNighttime() then
         if not isProcessRunning("Flux") then
-            log(
-                "🔆🕯️ Flux is not running during its allowed time; starting Flux")
+            log("🔆🕯️ Flux is not running during its allowed time; starting Flux")
             hs.execute("open -a Flux")
         end
         killProcess("Vivid")
     else
         if isProcessRunning("Flux") then
-            log(
-                "🔆🕯️ Flux is running outside its allowed time; killing Flux")
+            log("🔆🕯️ Flux is running outside its allowed time; killing Flux")
             killProcess("Flux")
             killAndRestartApp("Vivid") -- Restart Vivid app whenever we kill Flux
         end
@@ -40,17 +39,9 @@ local function handleFluxState()
 end
 
 local function restartVividIfNotNighttime()
-    if not isNighttime() then killAndRestartApp("Vivid") end
-end
-
--- Screen watcher to restart Vivid when switching to built-in display
-local BUILTIN_DISPLAY_NAME = "Built-in Retina Display"
-
-local function isPrimaryDisplayBuiltIn()
-    local primaryDisplay = hs.screen.primaryScreen()
-    log("Checking if primary display is built-in",
-        {primaryDisplay = primaryDisplay})
-    return primaryDisplay and primaryDisplay:name() == BUILTIN_DISPLAY_NAME
+    if not isNighttime() then
+        killAndRestartApp("Vivid")
+    end
 end
 
 local wasPrimaryDisplayBuiltIn = isPrimaryDisplayBuiltIn()
@@ -64,7 +55,9 @@ local function handlePowerSourceChange()
 
     if isPrimaryBuiltIn and not wasPrimaryDisplayBuiltIn then
         log("🔆 Switched to built-in display; preparing to restart Vivid.")
-        hs.timer.doAfter(2, function() restartVividIfNotNighttime() end)
+        hs.timer.doAfter(2, function()
+            restartVividIfNotNighttime()
+        end)
     end
 
     wasPrimaryDisplayBuiltIn = isPrimaryBuiltIn
@@ -78,10 +71,13 @@ end)
 
 powerWatcher:start()
 
-log("Screen watcher started",
-    {isPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn})
+log("Screen watcher started", {
+    isPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn
+})
 
 handleFluxState()
+restartVividIfNotNighttime()
+
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
 addWakeWatcher(handleFluxState)
