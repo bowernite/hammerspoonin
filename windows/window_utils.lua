@@ -4,12 +4,20 @@ function isMainWindow(window)
     local role = window:role()
     local subrole = window:subrole()
 
-    -- log("isMainWindow check: Role - " .. role .. ", Subrole - " .. subrole)
+    local isStandard = window:isStandard()
+    log("isMainWindow check: Window properties:", {
+        role = role,
+        subrole = subrole,
+        window = window,
+        isStandard = isStandard,
+        isMaximizable = window:isMaximizable()
+    })
 
     -- Main windows usually have the role 'AXWindow' and might have a subrole like 'AXStandardWindow'.
     -- These values can vary, so you might need to adjust them based on the behavior of specific apps.
     return role == "AXWindow" and
-               (subrole == "AXStandardWindow" or subrole == "")
+               (subrole == "AXStandardWindow" or subrole == "") and
+               window:isMaximizable()
 end
 
 function isWindowMaximized(window)
@@ -32,7 +40,7 @@ function isWindowCentered(window)
                            math.abs(windowCenter.y - screenCenter.y) < 1
 
     -- log("Window Centered Check: ",
-        -- {window, screen = window:screen(), isCentered})
+    -- {window, screen = window:screen(), isCentered})
     return isCentered
 end
 
@@ -42,7 +50,9 @@ function isMaximizable(window)
     if windowName:match("^Updating%s") then return false end
     if windowName:lower():match("settings") then return false end
 
-    return true
+    log("isMaximizable check: ", {isMaximizeable = window:isMaximizable()})
+
+    return window:isMaximizable()
 end
 
 function isMaximized(window)
