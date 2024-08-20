@@ -1,5 +1,5 @@
 require("utils/app_utils")
-require("utils/log_utils")
+require("utils/log")
 
 -- General things we want to do when macOS boots
 local output, status = hs.execute("colima start --ssh-agent", true)

@@ -1,5 +1,5 @@
 require("utils/app_utils")
-require("utils/log_utils")
+require("utils/log")
 require("boot")
 
 local function resetApps()

@@ -1,3 +1,5 @@
+require("utils/log")
+
 -- Function to hide all visible apps
 function hideAllApps()
     local createdNewFinderWindow = false
