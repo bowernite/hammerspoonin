@@ -75,4 +75,4 @@ function defaultAppState()
     minimizeCursorWindows()
 end
 
-defaultAppState()
+-- defaultAppState()
