@@ -3,19 +3,43 @@ require("windows/window_utils")
 
 hs.window.animationDuration = 0
 
-BLACKLIST_RULES = {
-    {app = "Alfred", window = "Alfred"}, {app = "Vivid"}, {app = "Remotasks"},
-    {app = "Remotasks Helper"}, {app = "Calculator"},
-    {app = "Captive Network Assistant"}, {window = "Software Update"},
-    {app = "Security Agent"}, {app = "Homerow"}, {app = "superwhisper"},
-    {window = "Untitled"}, {app = "coreautha"}
-}
+BLACKLIST_RULES = {{
+    app = "Alfred",
+    window = "Alfred"
+}, {
+    app = "Vivid"
+}, {
+    app = "Remotasks"
+}, {
+    app = "Remotasks Helper"
+}, {
+    app = "Calculator"
+}, {
+    app = "Captive Network Assistant"
+}, {
+    window = "Software Update"
+}, {
+    app = "Security Agent"
+}, {
+    app = "Homerow"
+}, {
+    app = "superwhisper"
+}, {
+    window = "Untitled"
+}, {
+    app = "coreautha"
+}}
 
 -- Function to check if a window is blacklisted
 function isWindowBlacklisted(window)
-    if not window or not window:application() then return true end
+    if not window or not window:application() then
+        return true
+    end
     local appName = window:application():name()
     local windowName = window:title()
+    if not appName or appName == "" or not windowName or windowName == "" then
+        return true
+    end
 
     if not isMainWindow(window) then
         -- log("Not a main window: ", {window})
@@ -23,8 +47,7 @@ function isWindowBlacklisted(window)
     end
 
     for _, rule in ipairs(BLACKLIST_RULES) do
-        if (not rule.app or appName == rule.app) and
-            (not rule.window or windowName == rule.window) then
+        if (not rule.app or appName == rule.app) and (not rule.window or windowName == rule.window) then
             return true
         end
     end
@@ -36,7 +59,9 @@ centeredWindows = {} -- Dictionary to keep track of centered windows
 maximizedWindows = {} -- Dictionary to keep track of maximized windows
 
 function updateWindowScreenMap(window)
-    if isWindowBlacklisted(window) then return end
+    if isWindowBlacklisted(window) then
+        return
+    end
 
     local windowID = window:id()
     local screenID = window:screen():id()
@@ -145,14 +170,38 @@ end
 function setDefaultWindowSize(window)
     local appName = window:application():name()
     local defaultSizes = {
-        ["Finder"] = {w = 800, h = 600},
-        ["Notes"] = {w = 1000, h = 1000},
-        ["System Settings"] = {w = 800, h = 600},
-        ["Reminders"] = {w = 700, h = 600},
-        ["Clock"] = {w = 650, h = 670},
-        ["Bear"] = {w = 1000, h = 1000},
-        ["Messages"] = {w = 1000, h = 800},
-        ["Contacts"] = {w = 700, h = 700}
+        ["Finder"] = {
+            w = 800,
+            h = 600
+        },
+        ["Notes"] = {
+            w = 1000,
+            h = 1000
+        },
+        ["System Settings"] = {
+            w = 800,
+            h = 600
+        },
+        ["Reminders"] = {
+            w = 700,
+            h = 600
+        },
+        ["Clock"] = {
+            w = 650,
+            h = 670
+        },
+        ["Bear"] = {
+            w = 1000,
+            h = 1000
+        },
+        ["Messages"] = {
+            w = 1000,
+            h = 800
+        },
+        ["Contacts"] = {
+            w = 700,
+            h = 700
+        }
     }
 
     -- log("App Name: " .. appName)
@@ -164,14 +213,21 @@ function setDefaultWindowSize(window)
     elseif appName == "Remotasks" or appName == "Remotasks Helper" then
         setDefaultRemotasksWindowSizes(window)
     else
-        if not maximizeWindow(window) then centerWindow(window) end
+        if not maximizeWindow(window) then
+            centerWindow(window)
+        end
     end
 end
 
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
-    if isWindowBlacklisted(window) then return end
+    if isWindowBlacklisted(window) then
+        return
+    end
 
-    log("Window created", {window, screen = window:screen()})
+    log("Window created", {
+        window,
+        screen = window:screen()
+    })
 
     updateWindowScreenMap(window)
 
@@ -197,10 +253,14 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
 end)
 
 local function handleWindowEvent(window, eventType)
-    if isWindowBlacklisted(window) then return end
+    if isWindowBlacklisted(window) then
+        return
+    end
 
-    log("Window event:" .. eventType .. "; adjusting window if necessary",
-        {window = window, screen = window:screen()})
+    log("Window event:" .. eventType .. "; adjusting window if necessary", {
+        window = window,
+        screen = window:screen()
+    })
 
     adjustWindowIfNecessary(window)
 
@@ -211,8 +271,9 @@ local function handleWindowEvent(window, eventType)
 end
 
 -- https://www.hammerspoon.org/docs/hs.window.filter.html
-windowWatcher:subscribe(hs.window.filter.windowMoved,
-                        function(window) handleWindowEvent(window, "moved") end)
+windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
+    handleWindowEvent(window, "moved")
+end)
 windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
     handleWindowEvent(window, "focused")
 end)
