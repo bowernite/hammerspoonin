@@ -1,12 +1,15 @@
 require("utils/log")
 
+local eventtap = hs.eventtap
+
 -- Function to hide all visible apps
 function hideAllApps()
     local createdNewFinderWindow = false
 
     logAction("Hiding all visible apps")
-    local visibleApps =
-        hs.window.filter.new():setAppFilter("", {visible = true}):getWindows()
+    local visibleApps = hs.window.filter.new():setAppFilter("", {
+        visible = true
+    }):getWindows()
     for _, window in ipairs(visibleApps) do
         local app = window:application()
 
@@ -23,12 +26,22 @@ function hideAllApps()
     end
 end
 
+function hideAllAppsManual()
+    logAction("Hiding all apps manually")
+    for i = 1, 15 do
+        hs.eventtap.keyStroke({"cmd"}, "h")
+        hs.timer.usleep(100) -- Sleep for 100ms between keystrokes
+    end
+end
+
 function killAppsInDock()
     local appsToNotKill = {"Hammerspoon", "Finder", "kitty"}
-    local appsInDock = hs.fnutils.filter(hs.application.runningApplications(),
-                                         function(app) return app:kind() == 1 end)
-    local appNamesInDock = hs.fnutils.map(appsInDock,
-                                          function(app) return app:name() end)
+    local appsInDock = hs.fnutils.filter(hs.application.runningApplications(), function(app)
+        return app:kind() == 1
+    end)
+    local appNamesInDock = hs.fnutils.map(appsInDock, function(app)
+        return app:name()
+    end)
     log("Killing apps in dock: " .. table.concat(appNamesInDock, ", "))
     for _, app in ipairs(appsInDock) do
         local appName = app:name()

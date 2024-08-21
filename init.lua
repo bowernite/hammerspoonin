@@ -12,9 +12,9 @@ local notify = hs.notify
 local application = hs.application
 
 require("vivid_fix")
-require("reset_apps")
+-- require("reset_apps")
 require("boot")
-require("morning_space")
+-- require("morning_space")
 require("fresh_unlock")
 
 -- This is a rabbit hole, and you ain't ready right now

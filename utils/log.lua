@@ -1,19 +1,20 @@
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
-    if not screen then return "(none)" end
+    if not screen then
+        return "(none)"
+    end
     local screenFrame = screen:frame()
-    return string.format("%s (Dimensions: w=%d, h=%d)", screen:name(),
-                         screenFrame.w, screenFrame.h)
+    return string.format("%s (Dimensions: w=%d, h=%d)", screen:name(), screenFrame.w, screenFrame.h)
 end
 
 -- Utility function to format window dimensions and coordinates
 local function formatWindowForLog(window)
-    if not window then return "(none)" end
+    if not window then
+        return "(none)"
+    end
     local windowFrame = window:frame()
-    return string.format(
-               "%s - %s (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)",
-               window:application():name(), window:title(), windowFrame.w,
-               windowFrame.h, windowFrame.x, windowFrame.y)
+    return string.format("%s - %s (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", window:application():name(),
+        window:title(), windowFrame.w, windowFrame.h, windowFrame.x, windowFrame.y)
 end
 
 -- Utility function to format details for log
@@ -23,22 +24,16 @@ local function formatDetailsForLog(details)
         logMessage = logMessage .. "\t"
         if type(value) == "userdata" and value and value.frame and value:frame() then
             if type(value.isScreen) == "function" and value:isScreen() then
-                logMessage = logMessage ..
-                                 (type(key) == "number" and "" or (key .. ": ")) ..
-                                 formatScreenForLog(value)
+                logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) .. formatScreenForLog(value)
             elseif type(value.isWindow) == "function" and value:isWindow() then
-                logMessage = logMessage ..
-                                 (type(key) == "number" and "" or (key .. ": ")) ..
-                                 formatWindowForLog(value)
+                logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) .. formatWindowForLog(value)
             else
-                logMessage = logMessage ..
-                                 (type(key) == "number" and "" or (key .. ": ")) ..
+                logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) ..
                                  (value ~= nil and tostring(value) or "(none)")
             end
             logMessage = logMessage .. " (type:" .. type(value) .. ")"
         else
-            logMessage = logMessage ..
-                             (type(key) == "number" and "" or (key .. ": ")) ..
+            logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) ..
                              (value ~= nil and tostring(value) or "(none)")
         end
         logMessage = logMessage .. "\n"
@@ -97,8 +92,7 @@ local function ensureContrast(color, isBlackBackground)
     end
 
     local adjustedColor = adjustColor(color, isBlackBackground)
-    local lum = luminance(adjustedColor.red, adjustedColor.green,
-                          adjustedColor.blue)
+    local lum = luminance(adjustedColor.red, adjustedColor.green, adjustedColor.blue)
 
     -- Adjust further if needed
     if isBlackBackground and lum < 0.4 then
@@ -136,7 +130,7 @@ function log(message, details, styleOptions, level)
     local timeDiff = currentTime - lastLogTime
     local thirtyMinutes = 1800 -- 30 minutes in seconds
     local numNewLines = math.min(20, math.floor(timeDiff / thirtyMinutes))
-    local newLines = string.rep("•\n", numNewLines)
+    local newLines = string.rep("•\n\n\n\n", numNewLines)
 
     local time = os.date("%I:%M:%S %p"):gsub("^0", ""):gsub(" ", ""):lower()
 
@@ -145,27 +139,34 @@ function log(message, details, styleOptions, level)
     local filename = debug.getinfo(stackLevel, "S").source:match("^.+/(.+)$")
     local emoji = fileEmojis[filename] or "🔍"
 
-    local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " ..
-                           message
+    local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " .. message
     if details then
-        logMessage = logMessage .. "\n" .. formatDetailsForLog(details) .. "\n"
+        logMessage = logMessage .. "\n" .. formatDetailsForLog(details)
     end
 
-    local isBlackBackground = styleOptions and styleOptions.backgroundColor and
-                                  styleOptions.backgroundColor.red == 0 and
-                                  styleOptions.backgroundColor.green == 0 and
-                                  styleOptions.backgroundColor.blue == 0
+    local isBlackBackground =
+        styleOptions and styleOptions.backgroundColor and styleOptions.backgroundColor.red == 0 and
+            styleOptions.backgroundColor.green == 0 and styleOptions.backgroundColor.blue == 0
 
-    local color = ensureContrast(generateColorFromMessage(message),
-                                 isBlackBackground)
+    local color = ensureContrast(generateColorFromMessage(message), isBlackBackground)
 
-    local defaultStyle = {color = color, font = {name = "Menlo", size = 18}}
+    local defaultStyle = {
+        color = color,
+        font = {
+            name = "Menlo",
+            size = 18
+        }
+    }
 
     -- Merge defaultStyle with styleOptions
     local finalStyle = {}
-    for k, v in pairs(defaultStyle) do finalStyle[k] = v end
+    for k, v in pairs(defaultStyle) do
+        finalStyle[k] = v
+    end
     if styleOptions then
-        for k, v in pairs(styleOptions) do finalStyle[k] = v end
+        for k, v in pairs(styleOptions) do
+            finalStyle[k] = v
+        end
     end
 
     hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
@@ -175,14 +176,28 @@ end
 
 -- Logger function for when we're going to do a concrete action (e.g. maximize a window, kill an app, etc.)
 function logAction(message, details)
-    log(message, details, {backgroundColor = {red = 0, green = 0, blue = 0}}, 3)
+    log(message, details, {
+        backgroundColor = {
+            red = 0,
+            green = 0,
+            blue = 0
+        }
+    }, 3)
 end
 
 -- Logger function for errors
 function logError(message, details)
     log(message, details, {
-        color = {red = 1, green = 0, blue = 0},
-        backgroundColor = {red = 0.2, green = 0, blue = 0}
+        color = {
+            red = 1,
+            green = 0,
+            blue = 0
+        },
+        backgroundColor = {
+            red = 0.2,
+            green = 0,
+            blue = 0
+        }
     }, 3)
     hs.notify.show("❌ Hammerspoon error", "", details)
 end
@@ -190,8 +205,16 @@ end
 -- Logger function for warnings
 function logWarning(message, details)
     log(message, details, {
-        color = {red = 1, green = 1, blue = 0},
-        backgroundColor = {red = 0.2, green = 0.2, blue = 0}
+        color = {
+            red = 1,
+            green = 1,
+            blue = 0
+        },
+        backgroundColor = {
+            red = 0.2,
+            green = 0.2,
+            blue = 0
+        }
     }, 3)
 end
 
