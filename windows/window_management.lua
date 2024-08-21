@@ -206,7 +206,7 @@ function setDefaultWindowSize(window)
             h = 700
         },
         ["Cold Turkey Blocker"] = {
-            w = 1500,
+            w = 1000,
             h = 1000
         }
     }
