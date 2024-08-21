@@ -30,7 +30,7 @@ BLACKLIST_RULES = {{
     app = "coreautha"
 }, {
     app = "Google Chrome",
-    window = "PayPal"
+    window = "PayPal - Google Chrome - Brett"
 }}
 
 -- Function to check if a window is blacklisted

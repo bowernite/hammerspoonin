@@ -13,7 +13,7 @@ local function formatWindowForLog(window)
         return "(none)"
     end
     local windowFrame = window:frame()
-    return string.format("%s - %s (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", window:application():name(),
+    return string.format("%s (app) - %s (window) (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", window:application():name(),
         window:title(), windowFrame.w, windowFrame.h, windowFrame.x, windowFrame.y)
 end
 
