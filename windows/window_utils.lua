@@ -15,15 +15,12 @@ function isMainWindow(window)
 
     -- Main windows usually have the role 'AXWindow' and might have a subrole like 'AXStandardWindow'.
     -- These values can vary, so you might need to adjust them based on the behavior of specific apps.
-    return role == "AXWindow" and
-               (subrole == "AXStandardWindow" or subrole == "") and
-               window:isMaximizable()
+    return role == "AXWindow" and (subrole == "AXStandardWindow" or subrole == "") and window:isMaximizable()
 end
 
 function isWindowMaximized(window)
     return window:isFullScreen() or
-               (window:frame().w == window:screen():frame().w and
-                   window:frame().h == window:screen():frame().h)
+               (window:frame().w == window:screen():frame().w and window:frame().h == window:screen():frame().h)
 end
 
 -- Function to check if a window is centered on its screen
@@ -35,9 +32,11 @@ function isWindowCentered(window)
         x = windowFrame.x - screenFrame.x + windowFrame.w / 2,
         y = windowFrame.y - screenFrame.y + windowFrame.h / 2
     }
-    local screenCenter = {x = screenFrame.w / 2, y = screenFrame.h / 2}
-    local isCentered = math.abs(windowCenter.x - screenCenter.x) < 1 and
-                           math.abs(windowCenter.y - screenCenter.y) < 1
+    local screenCenter = {
+        x = screenFrame.w / 2,
+        y = screenFrame.h / 2
+    }
+    local isCentered = math.abs(windowCenter.x - screenCenter.x) < 1 and math.abs(windowCenter.y - screenCenter.y) < 1
 
     -- log("Window Centered Check: ",
     -- {window, screen = window:screen(), isCentered})
@@ -46,24 +45,36 @@ end
 
 function isMaximizable(window)
     local windowName = window:title()
-    if not windowName then return false end
-    if windowName:match("^Updating%s") then return false end
-    if windowName:lower():match("settings") then return false end
+    if not windowName then
+        return false
+    end
+    if windowName:match("^Updating%s") then
+        return false
+    end
+    if windowName:lower():match("settings") then
+        return false
+    end
 
-    log("isMaximizable check: ", {isMaximizeable = window:isMaximizable()})
+    log("isMaximizable check: ", {
+        isMaximizeable = window:isMaximizable()
+    })
 
     return window:isMaximizable()
 end
 
 function isMaximized(window)
     return window:isFullScreen() or
-               (window:frame().w == window:screen():frame().w and
-                   window:frame().h == window:screen():frame().h)
+               (window:frame().w == window:screen():frame().w and window:frame().h == window:screen():frame().h)
 end
 
 -- Maximizes the given window. Returns true if the window was maximized, false if it was not.
 function maximizeWindow(window)
-    if isMaximized(window) then return true end
+    if isMaximized(window) then
+        log("Window is already maximized", {
+            window = window
+        })
+        return true
+    end
 
     if not isMaximizable(window) then
         log("Window is not maximizable; centering instead", {window})
@@ -73,19 +84,24 @@ function maximizeWindow(window)
 
     logAction("Maximizing window", {window})
 
-    window:setTopLeft({x = 0, y = 0})
+    window:setTopLeft({
+        x = 0,
+        y = 0
+    })
     window:maximize()
 
     poll(function()
         local maximized = window:isFullScreen() or
-                              (window:frame().w == window:screen():frame().w and
-                                  window:frame().h == window:screen():frame().h)
+                              (window:frame().w == window:screen():frame().w and window:frame().h ==
+                                  window:screen():frame().h)
         if maximized then
             return true
         else
-            logAction("(hack) Re-maximizing window, first attempt failed",
-                      {window})
-            window:setTopLeft({x = 0, y = 0})
+            logAction("(hack) Re-maximizing window, first attempt failed", {window})
+            window:setTopLeft({
+                x = 0,
+                y = 0
+            })
             window:maximize()
         end
     end, 0.2, 3, function()
@@ -103,7 +119,9 @@ function centerWindow(window)
         return
     end
 
-    if isWindowCentered(window) then return end
+    if isWindowCentered(window) then
+        return
+    end
 
     local windowID = window:id()
     logAction("Centering window", {window})

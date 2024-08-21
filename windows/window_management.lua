@@ -88,7 +88,7 @@ function adjustWindowIfNecessary(window)
         local newScreen = hs.screen.find(currentScreenID)
 
         if maximizedWindows[windowID] then
-            log("Was Maximized ✅")
+            log("Was maximized on old screen; maximizing on new screen")
             maximizeWindow(window)
             return
         end
