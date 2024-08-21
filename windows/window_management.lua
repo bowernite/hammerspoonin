@@ -204,6 +204,10 @@ function setDefaultWindowSize(window)
         ["Contacts"] = {
             w = 700,
             h = 700
+        },
+        ["Cold Turkey Blocker"] = {
+            w = 1500,
+            h = 1000
         }
     }
 
