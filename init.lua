@@ -11,7 +11,7 @@ local fs = hs.fs
 local notify = hs.notify
 local application = hs.application
 
-require("vivid_fix")
+require("screen_color_and_brightness")
 -- require("reset_apps")
 require("boot")
 -- require("morning_space")
