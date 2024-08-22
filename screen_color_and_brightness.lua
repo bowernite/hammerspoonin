@@ -3,8 +3,8 @@ require("utils/utils")
 require("utils/caffeinate")
 require("utils/screen_utils")
 
--- Parameters:
---   appName (string): The name of the application to restart.
+local eventtap = hs.eventtap
+
 --   delayBeforeRestart (number): The delay before restarting the application, in milliseconds (1 second = 1,000 milliseconds).
 local function killAndRestartApp(appName, delayBeforeRestart)
     delayBeforeRestart = delayBeforeRestart or 500 -- Default to 500 milliseconds if not specified
@@ -81,3 +81,26 @@ restartVividIfNotNighttime()
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
 addWakeWatcher(handleFluxState)
+
+local function maxOutBrightness()
+    log("Screen unlocked; checking to see if we need to max out brightness")
+    if not isNighttime() then
+        logAction("Screen unlocked during daytime; maxing out brightness")
+        for _, screen in ipairs(hs.screen.allScreens()) do
+            -- Doesn't work on external monitor. Maybe because of MonitorControl / that it's not an Apple display, so it doesn't support native brightness?
+            -- https://github.com/Hammerspoon/hammerspoon/issues/2342
+            -- screen:setBrightness(1)
+
+            for i = 1, 16 do -- Assuming 16 steps is enough to reach max brightness
+                hs.eventtap.event.newSystemKeyEvent("BRIGHTNESS_UP", true):post()
+                hs.eventtap.event.newSystemKeyEvent("BRIGHTNESS_UP", false):post()
+            end
+        end
+    end
+end
+
+local maxOutBrightnessTask = createDailyTask("05:00", maxOutBrightness)
+
+addWakeWatcher(function()
+    maxOutBrightnessTask()
+end)

@@ -1,6 +1,7 @@
 require("utils/app_utils")
 require("utils/log")
 require("boot")
+require("utils/utils")
 
 local function resetApps()
     log("Initiating app reset sequence")
@@ -18,27 +19,14 @@ local function resetApps()
 end
 
 local function resetAppsEveryMorning()
-    local hasResetToday = false
-
-    local function resetState()
-        log("Reset state triggered")
-        hasResetToday = false
-    end
-
-    hs.timer.doAt("03:59", "1d", resetState)
+    local resetTask = createDailyTask("04:00", function()
+        log("Resetting apps after first wake past 4 AM")
+        hs.alert.show("Doing morning reset...")
+        resetApps()
+    end)
 
     addWakeWatcher(function()
-        local currentTime = os.date("*t")
-        log("Checking if apps should be reset", {
-            hasResetToday = hasResetToday,
-            currentTime = currentTime
-        })
-        if not hasResetToday and currentTime.hour >= 4 then
-            log("Resetting apps after first wake past 4 AM")
-            hs.alert.show("Doing morning reset...")
-            resetApps()
-            hasResetToday = true
-        end
+        resetTask()
     end)
 end
 

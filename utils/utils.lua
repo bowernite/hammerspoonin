@@ -100,3 +100,29 @@ function throttle(func, cooldownPeriod)
         end
     end
 end
+
+function createDailyTask(resetTime, taskFunction)
+    local hasRunToday = false
+
+    local function resetState()
+        log("Reset state triggered")
+        hasRunToday = false
+    end
+
+    hs.timer.doAt(resetTime, "1d", resetState)
+
+    return function()
+        local currentTime = os.date("*t")
+        local resetHour = tonumber(resetTime:match("(%d+):"))
+        log("Checking if daily task should run", {
+            hasRunToday = hasRunToday,
+            currentTime = currentTime,
+            resetHour = resetHour
+        })
+        if not hasRunToday and currentTime.hour >= resetHour then
+            log("Running daily task")
+            taskFunction()
+            hasRunToday = true
+        end
+    end
+end
