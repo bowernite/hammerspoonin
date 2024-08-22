@@ -23,6 +23,7 @@ local function resetAppsEveryMorning()
         log("Resetting apps after first wake past 4 AM")
         hs.alert.show("Doing morning reset...")
         resetApps()
+        return true
     end)
 
     addWakeWatcher(function()

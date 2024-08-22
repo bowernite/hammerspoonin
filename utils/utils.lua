@@ -121,8 +121,10 @@ function createDailyTask(resetTime, taskFunction)
         })
         if not hasRunToday and currentTime.hour >= resetHour then
             log("Running daily task")
-            taskFunction()
-            hasRunToday = true
+            local result = taskFunction()
+            if result then
+                hasRunToday = true
+            end
         end
     end
 end

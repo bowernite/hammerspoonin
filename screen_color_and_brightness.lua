@@ -83,8 +83,11 @@ fluxTimer = hs.timer.doEvery(600, handleFluxState)
 addWakeWatcher(handleFluxState)
 
 local function maxOutBrightness()
-    log("Screen unlocked; checking to see if we need to max out brightness")
-    if not isNighttime() then
+    log("Screen unlocked; checking to see if we need to max out brightness", {
+        isNighttime = isNighttime(),
+        isPrimaryDisplayBuiltIn = isPrimaryDisplayBuiltIn()
+    })
+    if not isNighttime() and not isPrimaryDisplayBuiltIn() then
         logAction("Screen unlocked during daytime; maxing out brightness")
         for _, screen in ipairs(hs.screen.allScreens()) do
             -- Doesn't work on external monitor. Maybe because of MonitorControl / that it's not an Apple display, so it doesn't support native brightness?
@@ -95,6 +98,9 @@ local function maxOutBrightness()
                 hs.eventtap.event.newSystemKeyEvent("BRIGHTNESS_UP", true):post()
                 hs.eventtap.event.newSystemKeyEvent("BRIGHTNESS_UP", false):post()
             end
+
+            -- Return true to indicate that the task has been completed, so we don't need to run it again today
+            return true
         end
     end
 end
