@@ -5,13 +5,13 @@ function isMainWindow(window)
     local subrole = window:subrole()
 
     local isStandard = window:isStandard()
-    log("isMainWindow check: Window properties:", {
-        role = role,
-        subrole = subrole,
-        window = window,
-        isStandard = isStandard,
-        isMaximizable = window:isMaximizable()
-    })
+    -- log("isMainWindow check: Window properties:", {
+    --     role = role,
+    --     subrole = subrole,
+    --     window = window,
+    --     isStandard = isStandard,
+    --     isMaximizable = window:isMaximizable()
+    -- })
 
     -- Main windows usually have the role 'AXWindow' and might have a subrole like 'AXStandardWindow'.
     -- These values can vary, so you might need to adjust them based on the behavior of specific apps.
