@@ -133,9 +133,6 @@ function adjustWindowIfNecessary(window)
     centeredWindows[windowID] = isWindowCentered(window)
 end
 
--- Watch for window events
-windowWatcher = hs.window.filter.new(nil)
-
 function setDefaultRemotasksWindowSizes(window)
     local screenFrame = window:screen():frame()
     local screenWidth = screenFrame.w
@@ -225,19 +222,22 @@ function setDefaultWindowSize(window)
     end
 end
 
-windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
+local function handleWindowEvent(window, eventType)
     if isWindowBlacklisted(window) then
         return
     end
 
-    log("Window created", {
-        window,
+    log("Window event:" .. eventType .. "; adjusting window if necessary", {
+        window = window,
         screen = window:screen()
     })
 
+    adjustWindowIfNecessary(window)
+
     updateWindowScreenMap(window)
 
-    setDefaultWindowSize(window)
+    local windowID = window:id()
+    maximizedWindows[windowID] = isWindowMaximized(window)
 
     -- adjustWindowIfNecessary(window)
 
@@ -256,27 +256,13 @@ windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     --         log("Skipped maximizing due to empty window title", {app})
     --     end
     -- end
-end)
-
-local function handleWindowEvent(window, eventType)
-    if isWindowBlacklisted(window) then
-        return
-    end
-
-    log("Window event:" .. eventType .. "; adjusting window if necessary", {
-        window = window,
-        screen = window:screen()
-    })
-
-    adjustWindowIfNecessary(window)
-
-    updateWindowScreenMap(window)
-
-    local windowID = window:id()
-    maximizedWindows[windowID] = isWindowMaximized(window)
 end
 
 -- https://www.hammerspoon.org/docs/hs.window.filter.html
+windowWatcher = hs.window.filter.new(nil)
+windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
+    handleWindowEvent(window, "created")
+end)
 windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
     handleWindowEvent(window, "moved")
 end)
