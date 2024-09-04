@@ -1,7 +1,6 @@
 require("utils/log")
 require("windows/window_utils")
-
-hs.window.animationDuration = 0
+require("utils/caffeinate")
 
 BLACKLIST_RULES = {{
     app = "Alfred",
@@ -284,6 +283,14 @@ end)
 windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
     handleWindowEvent(window, "focused")
 end)
+-- 9/4/24: Trying to fix bug where focus event doesn't fire on first focus (but does fire on subsequent focus)
+-- TODO: Remove / isolate these if it's fixed, or remove if the wake watcher handles this
+windowWatcher:subscribe(hs.window.filter.windowOnScreen, function(window)
+    handleWindowEvent(window, "onScreen")
+end)
+windowWatcher:subscribe(hs.window.filter.windowVisible, function(window)
+    handleWindowEvent(window, "visible")
+end)
 
 hs.screen.watcher.newWithActiveScreen(function()
     log("newWithActiveScreen watcher called; adjusting windows", {
@@ -299,6 +306,21 @@ hs.screen.watcher.newWithActiveScreen(function()
         end
     end)
 end):start()
+
+addWakeWatcher(function()
+    logAction("wake watcher called; adjusting windows", {
+        primaryScreen = hs.screen.primaryScreen(),
+        mainScreen = hs.screen.mainScreen()
+    })
+    hs.timer.doAfter(1, function()
+        local allWindows = hs.window.allWindows()
+        for _, window in ipairs(allWindows) do
+            if window:screen() == hs.screen.primaryScreen() then
+                adjustWindowIfNecessary(window)
+            end
+        end
+    end)
+end)
 
 -- Initialize
 initWindowStates()
