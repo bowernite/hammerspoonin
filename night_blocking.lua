@@ -1,12 +1,12 @@
 require("utils/utils")
 
-local function isWeekend()
+local function isWeekendNight()
     local dayOfWeek = os.date("*t").wday
-    return dayOfWeek == 1 or dayOfWeek == 7 -- Sunday is 1, Saturday is 7
+    return dayOfWeek == 6 or dayOfWeek == 7 -- Friday is 6, Saturday is 7
 end
 
 local function getRestartTime()
-    return isWeekend() and "22:30" or "21:10"
+    return isWeekendNight() and "22:30" or "21:10"
 end
 
 local function scheduleRestart()
