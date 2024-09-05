@@ -81,9 +81,9 @@ end
 -- Maximizes the given window. Returns true if the window was maximized, false if it was not.
 function maximizeWindow(window)
     if isMaximized(window) then
-        log("Window is already maximized", {
-            window = window
-        })
+        -- log("Window is already maximized", {
+        --     window = window
+        -- })
         return true
     end
 
