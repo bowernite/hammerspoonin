@@ -89,17 +89,10 @@ function initWindowStates()
 end
 
 function adjustWindowIfNecessary(window)
-    local appName = window:application():name()
-    local windowName = window:title()
     if isWindowBlacklisted(window) then
         log("Exiting due to blacklisted window", {window})
         return
     end
-
-    -- if window:screen():name():lower():match("built%-in") then
-    --     log("Window is on MacBook's built-in display; not adjusting", {window})
-    --     return
-    -- end
 
     local windowID, currentScreenID = window:id(), window:screen():id()
 
@@ -232,7 +225,11 @@ local function handleWindowEvent(window, eventType)
         screen = window:screen()
     })
 
-    adjustWindowIfNecessary(window)
+    if eventType == "created" then
+        setDefaultWindowSize(window)
+    else
+        adjustWindowIfNecessary(window)
+    end
 
     updateWindowScreenMap(window)
 

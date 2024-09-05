@@ -22,3 +22,5 @@ require("windows/window_management")
 
 -- Doesn't seem to help err_network_changed..?
 -- require("disconnect_from_wifi_when_on_ethernet")
+
+require("night_blocking")
