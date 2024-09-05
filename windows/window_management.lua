@@ -296,7 +296,7 @@ addWakeWatcher(function()
         primaryScreen = hs.screen.primaryScreen(),
         mainScreen = hs.screen.mainScreen()
     })
-    hs.timer.doAfter(2, function()
+    hs.timer.doAfter(1, function()
         local allWindows = hs.window.allWindows()
         for _, window in ipairs(allWindows) do
             if window:screen() == hs.screen.primaryScreen() then

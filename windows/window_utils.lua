@@ -5,14 +5,14 @@ function isMainWindow(window)
     local subrole = window:subrole()
 
     local isStandard = window:isStandard()
-    log("isMainWindow check: Window properties:", {
-        role = role,
-        subrole = subrole,
-        window = window,
-        isStandard = isStandard,
-        isMaximizable = window:isMaximizable(),
-        isVisible = window:isVisible()
-    })
+    -- log("isMainWindow check: Window properties:", {
+    --     role = role,
+    --     subrole = subrole,
+    --     window = window,
+    --     isStandard = isStandard,
+    --     isMaximizable = window:isMaximizable(),
+    --     isVisible = window:isVisible()
+    -- })
 
     if not window:isMaximizable() then
         return false
