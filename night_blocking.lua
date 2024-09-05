@@ -16,7 +16,7 @@ local function scheduleRestart()
     local hour, minute = restartTime:match("(%d+):(%d+)")
 
     -- Schedule 10-minute warning
-    hs.timer.doAt(hour .. ":" .. string.format("%02d", minute - 10), "00", function()
+    hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - 10), function()
         if not hs.caffeinate.isScreenLocked() then
             logAction("Screen is not locked, sending notification")
             hs.notify.new({
@@ -27,7 +27,7 @@ local function scheduleRestart()
     end)
 
     -- Schedule 5-minute warning
-    hs.timer.doAt(hour .. ":" .. string.format("%02d", minute - 5), "00", function()
+    hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - 5), function()
         if not hs.caffeinate.isScreenLocked() then
             logAction("Screen is not locked, sending notification")
             hs.notify.new({
@@ -38,7 +38,7 @@ local function scheduleRestart()
     end)
 
     -- Schedule restart
-    hs.timer.doAt(restartTime, "00", function()
+    hs.timer.doAt(restartTime, function()
         log("Nightly restart fired, checking if screen is locked")
         if not hs.caffeinate.isScreenLocked() then
             logAction("Screen is not locked; restarting")
