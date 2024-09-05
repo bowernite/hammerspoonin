@@ -5,17 +5,28 @@ function isMainWindow(window)
     local subrole = window:subrole()
 
     local isStandard = window:isStandard()
-    -- log("isMainWindow check: Window properties:", {
-    --     role = role,
-    --     subrole = subrole,
-    --     window = window,
-    --     isStandard = isStandard,
-    --     isMaximizable = window:isMaximizable()
-    -- })
+    log("isMainWindow check: Window properties:", {
+        role = role,
+        subrole = subrole,
+        window = window,
+        isStandard = isStandard,
+        isMaximizable = window:isMaximizable(),
+        isVisible = window:isVisible()
+    })
+
+    if not window:isMaximizable() then
+        return false
+    end
+
+    -- When main windows are hidden, for some reason they seem to have the role AXDialog.
+    local isHiddenMainWindow = not window:isVisible() and role == "AXWindow" and subrole == "AXDialog"
+    if isHiddenMainWindow then
+        return true
+    end
 
     -- Main windows usually have the role 'AXWindow' and might have a subrole like 'AXStandardWindow'.
     -- These values can vary, so you might need to adjust them based on the behavior of specific apps.
-    return role == "AXWindow" and (subrole == "AXStandardWindow" or subrole == "") and window:isMaximizable()
+    return (role == "AXWindow" and (subrole == "AXStandardWindow" or subrole == ""))
 end
 
 function isWindowMaximized(window)

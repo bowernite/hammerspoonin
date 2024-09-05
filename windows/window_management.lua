@@ -39,12 +39,13 @@ function isWindowBlacklisted(window)
     end
     local appName = window:application():name()
     local windowName = window:title()
-    if not appName or appName == "" or not windowName or windowName == "" then
+    -- Chrome apps like Notion and Trello for some reason don't have a window name
+    if not appName or appName == "" or (not windowName or windowName == "") and appName ~= "Notion" and appName ~=
+        "Trello" then
         return true
     end
 
     if not isMainWindow(window) then
-        -- log("Not a main window: ", {window})
         return true
     end
 
@@ -295,7 +296,7 @@ addWakeWatcher(function()
         primaryScreen = hs.screen.primaryScreen(),
         mainScreen = hs.screen.mainScreen()
     })
-    hs.timer.doAfter(1, function()
+    hs.timer.doAfter(2, function()
         local allWindows = hs.window.allWindows()
         for _, window in ipairs(allWindows) do
             if window:screen() == hs.screen.primaryScreen() then
