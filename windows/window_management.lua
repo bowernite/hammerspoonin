@@ -201,6 +201,10 @@ function setDefaultWindowSize(window)
         }
     }
 
+    local centerOnlyApps = {
+        ["Preview"] = true
+    }
+
     -- log("App Name: " .. appName)
     if defaultSizes[appName] then
         log("Default size found for app")
@@ -209,6 +213,8 @@ function setDefaultWindowSize(window)
         centerWindow(window)
     elseif appName == "Remotasks" or appName == "Remotasks Helper" then
         setDefaultRemotasksWindowSizes(window)
+    elseif centerOnlyApps[appName] then
+        centerWindow(window)
     else
         if not maximizeWindow(window) then
             centerWindow(window)
