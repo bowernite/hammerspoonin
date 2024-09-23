@@ -3,6 +3,8 @@ require("windows/window_utils")
 require("utils/caffeinate")
 
 BLACKLIST_RULES = {{
+    app = "iPhone Mirroring"
+}, {
     app = "Alfred",
     window = "Alfred"
 }, {
