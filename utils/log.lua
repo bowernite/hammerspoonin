@@ -10,10 +10,12 @@ end
 -- Utility function to format window dimensions and coordinates
 local function formatWindowForLog(window)
     if not window then
-        return "(none)"
+        return "(null window)"
     end
     local windowFrame = window:frame()
-    return string.format("%s (app) - %s (window) (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", window:application():name(),
+    local app = window:application()
+    local appName = app and app:name() or "Unknown app name"
+    return string.format("%s (app) - %s (window) (Dimensions: w=%d, h=%d, Coordinates: x=%d, y=%d)", appName,
         window:title(), windowFrame.w, windowFrame.h, windowFrame.x, windowFrame.y)
 end
 
