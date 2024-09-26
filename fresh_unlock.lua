@@ -4,13 +4,13 @@ require("utils/app_utils")
 
 local function handleSleep()
     logAction("Fresh unlock on sleep")
-    hideAllAppsManual()
+    hideAllApps()
 end
 
 local function handleWake()
     logAction("Fresh unlock on wake")
     hs.timer.doAfter(0.1, function()
-        hideAllAppsManual()
+        -- hideAllApps()
     end)
 end
 
@@ -22,18 +22,20 @@ addSleepWatcher(throttledSleepHandler)
 addWakeWatcher(throttledWakeHandler)
 
 -- Function to sleep display and hide apps
-local function sleepDisplayAndHideApps()
+local function hideAppsAndSleep()
     throttledSleepHandler()
     logAction("Sleeping display")
     hs.caffeinate.systemSleep()
 end
 
 -- Function to hide apps and lock display
-local function hideAppsAndLockDisplay()
+local function hideAppsAndLock()
+    -- This isn't working..?
     throttledSleepHandler()
+    hideAllApps()
     logAction("Locking display")
     hs.caffeinate.lockScreen()
 end
 
-hs.hotkey.bind({"cmd", "ctrl"}, "w", sleepDisplayAndHideApps)
-hs.hotkey.bind({"cmd", "ctrl"}, "q", hideAppsAndLockDisplay)
+hs.hotkey.bind({"cmd", "ctrl"}, "w", hideAppsAndSleep)
+hs.hotkey.bind({"cmd", "ctrl"}, "q", hideAppsAndLock)

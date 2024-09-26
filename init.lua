@@ -22,6 +22,6 @@ require("night_blocking")
 ------------
 -- Annoying things to be enabled while developing
 ------------
-require("reset_apps")
+-- require("reset_apps")
 require("fresh_unlock")
 -- require("morning_space")

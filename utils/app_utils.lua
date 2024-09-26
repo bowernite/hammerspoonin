@@ -4,34 +4,45 @@ local eventtap = hs.eventtap
 
 -- Function to hide all visible apps
 function hideAllApps()
-    local createdNewFinderWindow = false
-
-    logAction("Hiding all visible apps")
-    local visibleApps = hs.window.filter.new():setAppFilter("", {
-        visible = true
-    }):getWindows()
-    for _, window in ipairs(visibleApps) do
-        local app = window:application()
-
-        if app then
-            logAction("Hiding app: " .. app:name())
-            app:hide()
-        end
+    logAction("Hiding all apps, via Finder + Hide Others")
+    local finderApp = hs.application.open("Finder")
+    if finderApp then
+        finderApp:activate()
+    else
+        log("Failed to open Finder")
     end
-    -- Hide Hammerspoon
-    local hammerspoonApp = hs.application.get("Hammerspoon")
-    if hammerspoonApp then
-        logAction("Hiding Hammerspoon")
-        hammerspoonApp:hide()
-    end
+    -- Hide all other applications
+    hs.eventtap.keyStroke({"cmd", "alt"}, "h")
+    closeAllFinderWindows()
+
+    -- local createdNewFinderWindow = false
+
+    -- logAction("Hiding all visible apps")
+    -- local visibleApps = hs.window.filter.new():setAppFilter("", {
+    --     visible = true
+    -- }):getWindows()
+    -- for _, window in ipairs(visibleApps) do
+    --     local app = window:application()
+
+    --     if app then
+    --         logAction("Hiding app: " .. app:name())
+    --         app:hide()
+    --     end
+    -- end
+    -- -- Hide Hammerspoon
+    -- local hammerspoonApp = hs.application.get("Hammerspoon")
+    -- if hammerspoonApp then
+    --     logAction("Hiding Hammerspoon")
+    --     hammerspoonApp:hide()
+    -- end
 end
 
 function hideAllAppsManual()
-    logAction("Hiding all apps manually")
-    for i = 1, 15 do
-        hs.eventtap.keyStroke({"cmd"}, "h")
-        hs.timer.usleep(100) -- Sleep for 100ms between keystrokes
-    end
+    -- logAction("Hiding all apps manually")
+    -- for i = 1, 15 do
+    --     hs.eventtap.keyStroke({"cmd"}, "h")
+    --     hs.timer.usleep(100) -- Sleep for 100ms between keystrokes
+    -- end
 end
 
 function killAppsInDock()
