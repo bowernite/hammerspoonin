@@ -25,8 +25,10 @@ function startEssentialApps()
         end
     end
 
-    for _, appName in ipairs(essentialApps) do
-        startApp(appName)
+    for i, appName in ipairs(essentialApps) do
+        hs.timer.doAfter((i - 1) * 0.25, function()
+            startApp(appName)
+        end)
     end
 end
 
@@ -70,9 +72,13 @@ function minimizeCursorWindows()
 end
 
 function defaultAppState()
-    startEssentialApps()
-    openDefaultRepos()
-    minimizeCursorWindows()
+    hs.timer.doAfter(0, function()
+        startEssentialApps()
+        hs.timer.doAfter(1, function()
+            openDefaultRepos()
+            hs.timer.doAfter(1, function()
+                minimizeCursorWindows()
+            end)
+        end)
+    end)
 end
-
--- defaultAppState()

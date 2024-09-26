@@ -8,9 +8,9 @@ local function resetApps()
 
     killAppsInDock()
 
-    defaultAppState()
     hs.timer.doAfter(2, function()
-        startEssentialApps()
+    defaultAppState()
+        -- startEssentialApps()
     end)
 
     closeAllFinderWindows()
