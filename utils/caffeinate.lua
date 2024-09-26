@@ -4,7 +4,14 @@ local wakeListeners = {}
 local sleepListeners = {}
 
 local function notifyListeners(listeners, eventType)
-    for _, listener in ipairs(listeners) do listener(eventType) end
+    for _, listener in ipairs(listeners) do
+        listener(eventType)
+    end
+end
+
+function isScreenLocked()
+    -- `not not` casts to boolean (this returns nil if the screen is not locked)
+    return not not hs.caffeinate.sessionProperties()["CGSSessionScreenIsLocked"]
 end
 
 -- https://github.com/Hammerspoon/hammerspoon/blob/45fa3561a5c8fcbba3ebcef7aff25ed296e49fe9/extensions/caffeinate/libcaffeinate_watcher.m#L76
@@ -51,6 +58,10 @@ end)
 
 watcher:start()
 
-function addWakeWatcher(listener) table.insert(wakeListeners, listener) end
+function addWakeWatcher(listener)
+    table.insert(wakeListeners, listener)
+end
 
-function addSleepWatcher(listener) table.insert(sleepListeners, listener) end
+function addSleepWatcher(listener)
+    table.insert(sleepListeners, listener)
+end

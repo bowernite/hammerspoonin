@@ -1,4 +1,5 @@
 require("utils/utils")
+require("utils/caffeinate")
 
 local function isWeekendNight()
     local dayOfWeek = os.date("*t").wday
@@ -9,40 +10,64 @@ local function getRestartTime()
     return isWeekendNight() and "22:30" or "21:10"
 end
 
+-- Returns true if the current time is within an hour after the restart time
+local function isWithinRestartTimeWindow()
+    local restartTime = getRestartTime()
+    local restartHour, restartMinute = restartTime:match("(%d+):(%d+)")
+    local restartMinutes = tonumber(restartHour) * 60 + tonumber(restartMinute)
+
+    local currentTimeInfo = getCurrentTimeInfo()
+    local currentMinutes = currentTimeInfo.hour * 60 + currentTimeInfo.minute
+
+    local timeDifference = (currentMinutes - restartMinutes + 1440) % 1440 -- Ensure positive difference
+
+    log("Checking to see if night_blocking action fired within restart time window", {
+        restartTime = restartTime,
+        restartMinutes = restartMinutes,
+        currentTime = currentTimeInfo.hour .. ":" .. currentTimeInfo.minute,
+        currentMinutes = currentMinutes,
+        timeDifference = timeDifference
+    })
+
+    return timeDifference <= 60 -- Within 60 minutes after restart time
+end
+
+function showWarning(timeRemaining)
+    if isWithinRestartTimeWindow() then
+        hs.alert.show("Computer will restart in " .. tostring(timeRemaining) .. " minutes", 5)
+    end
+end
+
 local function scheduleRestart()
     log("Scheduling restart")
-  
+
     local restartTime = getRestartTime()
+
+    -- Schedule warnings
+    local warningTimes = {10, 5, 3, 1}
     local hour, minute = restartTime:match("(%d+):(%d+)")
-
-    -- Schedule 10-minute warning
-    hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - 10), function()
-        if not hs.caffeinate.isScreenLocked() then
-            logAction("Screen is not locked, sending notification")
-            hs.notify.new({
-                title = "Computer Restart",
-                informativeText = "Computer will restart in 10 minutes"
-            }):send()
-        end
-    end)
-
-    -- Schedule 5-minute warning
-    hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - 5), function()
-        if not hs.caffeinate.isScreenLocked() then
-            logAction("Screen is not locked, sending notification")
-            hs.notify.new({
-                title = "Computer Restart",
-                informativeText = "Computer will restart in 5 minutes"
-            }):send()
-        end
-    end)
+    for _, warningTime in ipairs(warningTimes) do
+        hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - warningTime), function()
+            if not isScreenLocked() then
+                logAction("Screen is not locked, sending notification")
+                showWarning(warningTime)
+            end
+        end)
+    end
 
     -- Schedule restart
     hs.timer.doAt(restartTime, function()
         log("Nightly restart fired, checking if screen is locked")
-        if not hs.caffeinate.isScreenLocked() then
-            logAction("Screen is not locked; restarting")
-            hs.execute("shutdown -r now")
+        if not isScreenLocked() then
+            log("Screen is not locked...")
+            if not isWithinRestartTimeWindow() then
+                log("Not within restart time window, skipping")
+                return
+            end
+
+            logAction(
+                "Brett has been a bad boy... Restarting his computer to keep him honest and keep that melatonin highhhhhh")
+            hs.caffeinate.restartSystem()
         end
     end)
 end
@@ -52,3 +77,5 @@ hs.timer.doEvery(24 * 60 * 60, scheduleRestart)
 
 -- Initial run
 scheduleRestart()
+
+hs.caffeinate.restartSystem()
