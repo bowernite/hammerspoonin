@@ -78,4 +78,4 @@ hs.timer.doEvery(24 * 60 * 60, scheduleRestart)
 -- Initial run
 scheduleRestart()
 
-hs.caffeinate.restartSystem()
+-- hs.caffeinate.restartSystem()

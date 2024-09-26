@@ -13,7 +13,7 @@ local function killAndRestartApp(appName, delayBeforeRestart)
     -- Wait for the app to fully terminate before attempting to restart
     hs.timer.usleep(delayBeforeRestart * 1000) -- Convert milliseconds to microseconds
 
-    log("🔆 Starting " .. appName)
+    log("Starting " .. appName)
     hs.application.open(appName)
 end
 
@@ -25,13 +25,13 @@ local function handleFluxState()
     log("Handle flux state")
     if isNighttime() then
         if not isProcessRunning("Flux") then
-            log("🔆🕯️ Flux is not running during its allowed time; starting Flux")
+            log("🕯️ Flux is not running during its allowed time; starting Flux")
             hs.execute("open -a Flux")
         end
         killProcess("Vivid")
     else
         if isProcessRunning("Flux") then
-            log("🔆🕯️ Flux is running outside its allowed time; killing Flux")
+            log("🕯️ Flux is running outside its allowed time; killing Flux")
             killProcess("Flux")
             killAndRestartApp("Vivid") -- Restart Vivid app whenever we kill Flux
         end
@@ -54,7 +54,7 @@ local function handlePowerSourceChange()
     })
 
     if isPrimaryBuiltIn and not wasPrimaryDisplayBuiltIn then
-        log("🔆 Switched to built-in display; preparing to restart Vivid.")
+        log("Switched to built-in display; preparing to restart Vivid.")
         hs.timer.doAfter(2, function()
             restartVividIfNotNighttime()
         end)
