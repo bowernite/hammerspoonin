@@ -2,6 +2,18 @@ require("utils/log")
 
 local eventtap = hs.eventtap
 
+function closeAllFinderWindows()
+    logAction("Closing all Finder windows")
+    local finder = hs.application.get("Finder")
+    if finder then
+        local windows = finder:allWindows()
+        for i, window in ipairs(windows) do
+            log("Finder window " .. i .. ": " .. window:title())
+            window:close()
+        end
+    end
+end
+
 -- Function to hide all visible apps
 function hideAllApps()
     logAction("Hiding all apps, via Finder + Hide Others")
@@ -13,6 +25,7 @@ function hideAllApps()
     end
     -- Hide all other applications
     hs.eventtap.keyStroke({"cmd", "alt"}, "h")
+    hs.timer.usleep(500000)
     closeAllFinderWindows()
 
     -- local createdNewFinderWindow = false
@@ -75,17 +88,5 @@ function hideAppWhenAvailable(appName)
     end, 2, 30, function()
         logWarning("Failed to hide " .. appName .. " after 30 attempts")
     end)
-end
-
-function closeAllFinderWindows()
-    logAction("Closing all Finder windows")
-    local finder = hs.application.get("Finder")
-    if finder then
-        local windows = finder:allWindows()
-        for i, window in ipairs(windows) do
-            log("Finder window " .. i .. ": " .. window:title())
-            window:close()
-        end
-    end
 end
 

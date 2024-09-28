@@ -9,8 +9,9 @@ end
 
 local function handleWake()
     logAction("Fresh unlock on wake")
-    hs.timer.doAfter(0.1, function()
+    hs.timer.doAfter(1, function()
         -- hideAllApps()
+        closeAllFinderWindows()
     end)
 end
 

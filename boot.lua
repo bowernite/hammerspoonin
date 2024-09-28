@@ -81,4 +81,8 @@ function defaultAppState()
             end)
         end)
     end)
+
+    hs.timer.doAfter(10, function()
+        hideAllApps()
+    end)
 end
