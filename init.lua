@@ -22,7 +22,9 @@ require("night_blocking")
 -- Annoying things to be enabled while developing
 ------------
 require("reset_apps")
-require("fresh_unlock")
 -- require("boot")
 -- defaultAppState()
 -- require("morning_space")
+
+-- Current Finder functionality is buggy -- we can pick this up later
+-- require("fresh_unlock")

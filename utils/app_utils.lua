@@ -24,6 +24,7 @@ function hideAllApps()
         log("Failed to open Finder")
     end
     -- Hide all other applications
+    hs.timer.usleep(250000)  -- Sleep for 0.25 seconds (250,000 microseconds)
     hs.eventtap.keyStroke({"cmd", "alt"}, "h")
     hs.timer.usleep(500000)
     closeAllFinderWindows()
