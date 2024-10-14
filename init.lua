@@ -15,16 +15,20 @@ local notify = hs.notify
 local application = hs.application
 
 require("screen_color_and_brightness")
-require("windows/window_management")
 require("night_blocking")
 
-------------
+---------------------------
+-- WIP / not sure about yet
+------------------------------------------------
+-- require("windows/window_management")
+
+------------------------------------------------
 -- Annoying things to be enabled while developing
-------------
+------------------------------------------------
 require("reset_apps")
--- require("boot")
--- defaultAppState()
--- require("morning_space")
+require("boot")
+defaultAppState()
+require("morning_space")
 
 -- Current Finder functionality is buggy -- we can pick this up later
 -- require("fresh_unlock")
