@@ -21,7 +21,7 @@ end
 local function resetAppsEveryMorning()
     local resetTask = createDailyTask("04:00", function()
         log("Resetting apps after first wake past 4 AM")
-        hs.alert.show("Doing morning reset...")
+        hs.alert.show("Doing morning reset...", 10)
         hs.notify.show("Doing morning reset...", "Resetting apps")
         resetApps()
         return true
