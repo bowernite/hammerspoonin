@@ -20,7 +20,9 @@ require("night_blocking")
 ---------------------------
 -- WIP / not sure about yet
 ------------------------------------------------
--- require("windows/window_management")
+-- New finder windows annoying
+-- Without this, it's just... stupid
+require("windows/window_management")
 
 ------------------------------------------------
 -- Annoying things to be enabled while developing

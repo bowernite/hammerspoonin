@@ -31,12 +31,15 @@ local activeMouseTimer = nil
 local activeDelayMessage = nil
 
 -- Define test mode key combo
-local testModeKeyCombo = {mods = {"cmd", "alt"}, key = "t"}
+local testModeKeyCombo = {
+    mods = {"cmd", "alt"},
+    key = "t"
+}
 
 local function showDelayMessage()
     log("Showing delay message")
-    local message = hs.alert.show("🌅 Good morning! Have some space 😌",
-                                  hs.screen.mainScreen(), 150)
+    local message = hs.alert.show("🌅 Good morning! Have some space 😌", hs.screen.mainScreen(), 150)
+    hs.notify.show("Good morning!", "Have some space 😌")
     activeDelayMessage = message
     return message
 end
@@ -51,9 +54,8 @@ end
 
 local function offerShutdown()
     log("Offering shutdown option")
-    local result = hs.dialog.blockAlert("Morning Routine",
-                                        "Would you like to shut down instead of waiting?",
-                                        "Shut Down", "Wait")
+    local result = hs.dialog.blockAlert("Morning Routine", "Would you like to shut down instead of waiting?",
+        "Shut Down", "Wait")
     if result == "Shut Down" then
         if not isTestMode then
             log("User chose to shut down")
@@ -73,7 +75,12 @@ local function createFullScreenOverlay()
     canvas:appendElements({
         type = "rectangle",
         action = "fill",
-        fillColor = {red = 0, green = 0, blue = 0, alpha = 0.8}
+        fillColor = {
+            red = 0,
+            green = 0,
+            blue = 0,
+            alpha = 0.8
+        }
     })
     canvas:show()
     return canvas
@@ -120,15 +127,12 @@ local function applyMorningDelay()
         -- offerShutdown()
 
         activeOverlay = createFullScreenOverlay()
-        activeKeyboardBlocker = hs.eventtap.new({
-            hs.eventtap.event.types.keyDown
-        }, function(event)
+        activeKeyboardBlocker = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(event)
             local flags = event:getFlags()
             local keyCode = event:getKeyCode()
 
             -- Allow the test mode key combo to pass through
-            if flags:containExactly(testModeKeyCombo.mods) and keyCode ==
-                hs.keycodes.map[testModeKeyCombo.key] then
+            if flags:containExactly(testModeKeyCombo.mods) and keyCode == hs.keycodes.map[testModeKeyCombo.key] then
                 log("Test mode key combo detected, allowing input")
                 return false
             end
@@ -154,12 +158,12 @@ local function applyMorningDelay()
         lastDelayTime = currentTime
     else
         log("Delay conditions not met, skipping delay")
-        clearActiveBlocking()  -- Ensure all blocking is cleared when outside the time window
+        clearActiveBlocking() -- Ensure all blocking is cleared when outside the time window
     end
 end
 
-addWakeWatcher(function() 
-    hs.timer.doAfter(0.1, applyMorningDelay)  -- Slight delay to ensure system is fully awake
+addWakeWatcher(function()
+    hs.timer.doAfter(0.1, applyMorningDelay) -- Slight delay to ensure system is fully awake
 end)
 
 -- Function to toggle test mode
