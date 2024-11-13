@@ -42,33 +42,35 @@ local function scheduleRestart()
     log("Scheduling restart")
 
     local restartTime = getRestartTime()
+    log("Restart time: " .. restartTime)
 
     -- Schedule warnings
     local warningTimes = {10, 5, 3, 1}
     local hour, minute = restartTime:match("(%d+):(%d+)")
     for _, warningTime in ipairs(warningTimes) do
+        log("Scheduling warning for " .. warningTime .. " minutes before restart")
         hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - warningTime), function()
-            if not isScreenLocked() then
-                logAction("Screen is not locked, sending notification")
-                showWarning(warningTime)
-            end
+            -- if not isScreenLocked() then
+            logAction("Screen is not locked, sending notification")
+            showWarning(warningTime)
+            -- end
         end)
     end
 
     -- Schedule restart
     hs.timer.doAt(restartTime, function()
         log("Nightly restart fired, checking if screen is locked")
-        if not isScreenLocked() then
-            log("Screen is not locked...")
-            if not isWithinRestartTimeWindow() then
-                log("Not within restart time window, skipping")
-                return
-            end
-
-            logAction(
-                "Brett has been a bad boy... Restarting his computer to keep him honest and keep that melatonin highhhhhh")
-            hs.caffeinate.restartSystem()
+        -- if not isScreenLocked() then
+        log("Screen is not locked...")
+        if not isWithinRestartTimeWindow() then
+            log("Not within restart time window, skipping")
+            return
         end
+
+        logAction(
+            "Brett has been a bad boy... Restarting his computer to keep him honest and keep that melatonin highhhhhh")
+        hs.caffeinate.restartSystem()
+        -- end
     end)
 end
 

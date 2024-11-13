@@ -28,9 +28,10 @@ require("windows/window_management")
 -- Annoying things to be enabled while developing
 ------------------------------------------------
 require("reset_apps")
+-- resetAppsEveryMorning()
 require("boot")
 defaultAppState()
-require("morning_space")
+-- require("morning_space")
 
 -- Current Finder functionality is buggy -- we can pick this up later
 -- require("fresh_unlock")

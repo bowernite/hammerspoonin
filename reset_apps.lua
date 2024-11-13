@@ -18,11 +18,11 @@ local function resetApps()
     hs.alert.show("Reset apps")
 end
 
-local function resetAppsEveryMorning()
+function resetAppsEveryMorning()
     local resetTask = createDailyTask("04:00", function()
         log("Resetting apps after first wake past 4 AM")
         hs.alert.show("Doing morning reset...", 10)
-        hs.notify.show("Doing morning reset...", "Resetting apps")
+        hs.notify.show("Doing morning reset...", "Resetting apps", "")
         resetApps()
         return true
     end)
@@ -31,8 +31,6 @@ local function resetAppsEveryMorning()
         resetTask()
     end)
 end
-
-resetAppsEveryMorning()
 
 hs.hotkey.bind({"cmd", "alt"}, "K", function()
     resetApps()
