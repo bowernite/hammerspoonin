@@ -103,20 +103,22 @@ end
 
 function createDailyTask(resetTime, taskFunction)
     local hasRunToday = false
+    local resetTimer = nil
 
     local function resetState()
         log("Reset state triggered")
         hasRunToday = false
     end
 
-    hs.timer.doAt(resetTime, "1d", resetState)
+    -- Store timer in variable to prevent garbage collection
+    resetTimer = hs.timer.doAt(resetTime, "1d", resetState)
 
     return function()
         local currentTime = os.date("*t")
         local resetHour = tonumber(resetTime:match("(%d+):"))
         log("Checking if daily task should run", {
             hasRunToday = hasRunToday,
-            currentTime = currentTime,
+            currentTime = string.format("%02d:%02d", currentTime.hour, currentTime.min),
             resetHour = resetHour
         })
         if not hasRunToday and currentTime.hour >= resetHour then
