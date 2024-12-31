@@ -185,10 +185,6 @@ function setDefaultWindowSize(window)
             w = 650,
             h = 670
         },
-        ["Bear"] = {
-            w = 1000,
-            h = 1000
-        },
         ["Messages"] = {
             w = 1000,
             h = 800

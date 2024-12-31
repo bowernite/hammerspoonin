@@ -103,9 +103,11 @@ local function maxOutBrightness()
             return true
         end
     end
+
+    return false
 end
 
-local maxOutBrightnessTask = createDailyTask("05:00", maxOutBrightness)
+local maxOutBrightnessTask = createDailyTask("05:00", maxOutBrightness, "Max out brightness (external monitor)")
 
 addWakeWatcher(function()
     maxOutBrightnessTask()

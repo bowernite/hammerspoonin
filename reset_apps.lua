@@ -9,8 +9,7 @@ local function resetApps()
     killAppsInDock()
 
     hs.timer.doAfter(2, function()
-    defaultAppState()
-        -- startEssentialApps()
+        defaultAppState()
     end)
 
     closeAllFinderWindows()
@@ -19,13 +18,16 @@ local function resetApps()
 end
 
 function resetAppsEveryMorning()
-    local resetTask = createDailyTask("04:00", function()
+    local function resetAppsTask()
         log("Resetting apps after first wake past 4 AM")
         hs.alert.show("Doing morning reset...", 10)
         hs.notify.show("Doing morning reset...", "Resetting apps", "")
         resetApps()
+        log("Reset apps complete; returning true")
         return true
-    end)
+    end
+
+    local resetTask = createDailyTask("04:00", resetAppsTask, "Reset apps")
 
     addWakeWatcher(function()
         resetTask()

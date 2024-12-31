@@ -28,7 +28,7 @@ require("windows/window_management")
 -- Annoying things to be enabled while developing
 ------------------------------------------------
 require("reset_apps")
--- resetAppsEveryMorning()
+resetAppsEveryMorning()
 require("boot")
 defaultAppState()
 -- require("morning_space")

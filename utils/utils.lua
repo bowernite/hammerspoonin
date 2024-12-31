@@ -101,7 +101,7 @@ function throttle(func, cooldownPeriod)
     end
 end
 
-function createDailyTask(resetTime, taskFunction)
+function createDailyTask(resetTime, taskFunction, taskName)
     local hasRunToday = false
     local resetTimer = nil
 
@@ -119,13 +119,19 @@ function createDailyTask(resetTime, taskFunction)
         log("Checking if daily task should run", {
             hasRunToday = hasRunToday,
             currentTime = string.format("%02d:%02d", currentTime.hour, currentTime.min),
-            resetHour = resetHour
+            resetHour = resetHour,
+            taskName = taskName
         })
         if not hasRunToday and currentTime.hour >= resetHour then
-            log("Running daily task")
+            log("Attempting to run daily task")
             local result = taskFunction()
+            log("Daily task result", {
+                result = tostring(result)
+            })
             if result then
                 hasRunToday = true
+                log("Daily task ran successfully (" .. taskName .. ")")
+                hs.notify.show("Daily task ran successfully", taskName, "")
             end
         end
     end

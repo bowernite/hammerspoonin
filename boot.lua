@@ -8,7 +8,7 @@ if not status then
 end
 
 function startEssentialApps()
-    local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Bear", "Vivid",
+    local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
                            "Google Chrome", "Notion", "Trello", "Hammerspoon"}
 
     logAction("Starting essential apps")
