@@ -24,7 +24,7 @@ function hideAllApps()
         log("Failed to open Finder")
     end
     -- Hide all other applications
-    hs.timer.usleep(250000)  -- Sleep for 0.25 seconds (250,000 microseconds)
+    hs.timer.usleep(250000) -- Sleep for 0.25 seconds (250,000 microseconds)
     hs.eventtap.keyStroke({"cmd", "alt"}, "h")
     hs.timer.usleep(500000)
     closeAllFinderWindows()
@@ -59,15 +59,21 @@ function hideAllAppsManual()
     -- end
 end
 
-function killAppsInDock()
-    local appsToNotKill = {"Hammerspoon", "Finder", "kitty"}
+function killAppsInDock(additionalAppsToNotKill)
+    local defaultAppsToNotKill = {"Hammerspoon", "Finder", "kitty"}
+    local appsToNotKill = defaultAppsToNotKill
+    if additionalAppsToNotKill then
+        for _, app in ipairs(additionalAppsToNotKill) do
+            table.insert(appsToNotKill, app)
+        end
+    end
     local appsInDock = hs.fnutils.filter(hs.application.runningApplications(), function(app)
         return app:kind() == 1
     end)
     local appNamesInDock = hs.fnutils.map(appsInDock, function(app)
         return app:name()
     end)
-    log("Killing apps in dock: " .. table.concat(appNamesInDock, ", "))
+    logAction("Killing the following apps in dock: " .. table.concat(appNamesInDock, ", "))
     for _, app in ipairs(appsInDock) do
         local appName = app:name()
         if not hs.fnutils.contains(appsToNotKill, appName) then

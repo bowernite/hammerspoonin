@@ -6,7 +6,7 @@ require("utils/utils")
 local function resetApps()
     log("Initiating app reset sequence")
 
-    killAppsInDock()
+    killInessentialApps()
 
     hs.timer.doAfter(2, function()
         defaultAppState()

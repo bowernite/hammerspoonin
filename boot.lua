@@ -7,10 +7,15 @@ if not status then
     hs.alert.show("Failed to start Colima: " .. output)
 end
 
-function startEssentialApps()
-    local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
-                           "Google Chrome", "Notion", "Trello", "Hammerspoon"}
+local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
+                       "Google Chrome", "Notion", "Trello", "Hammerspoon"}
 
+function killInessentialApps()
+    logAction("Killing inessential apps")
+    killAppsInDock(essentialApps)
+end
+
+function startEssentialApps()
     logAction("Starting essential apps")
     local startApp = function(appName)
         if not hs.application.get(appName) then
