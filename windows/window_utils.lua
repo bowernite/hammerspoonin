@@ -100,7 +100,9 @@ function maximizeWindow(window)
     -- An attempt to circumvent issues where e.g. the size adjustment happens while the window is moving, and therefore doesn't take up the full size of the screen
     hs.window.animationDuration = 0
 
-    window:setFrame({
+    -- Apparently, this might help the slightly off issues, i.e. when the window isn't _quite_ at the top, etc.
+    -- https://github.com/Hammerspoon/hammerspoon/blob/cdd19a5def652540af23e0219acfce5296c3ae7a/extensions/window/window.lua#L392
+    window:setFrameWithWorkarounds({
         x = 0,
         y = 0,
         w = window:screen():frame().w,
