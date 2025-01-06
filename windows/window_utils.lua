@@ -95,17 +95,26 @@ function maximizeWindow(window)
 
     logAction("Maximizing window", {window})
 
-    -- Turn on if we're using `window:maximize()`
-    -- hs.window.animationDuration = 0
+    local originalAnimationDuration = hs.window.animationDuration
 
-    window:setTopLeft({
+    -- An attempt to circumvent issues where e.g. the size adjustment happens while the window is moving, and therefore doesn't take up the full size of the screen
+    hs.window.animationDuration = 0
+
+    window:setFrame({
         x = 0,
-        y = 0
-    })
-    window:setSize({
+        y = 0,
         w = window:screen():frame().w,
         h = window:screen():frame().h
     })
+
+    -- window:setTopLeft({
+    --     x = 0,
+    --     y = 0
+    -- })
+    -- window:setSize({
+    --     w = window:screen():frame().w,
+    --     h = window:screen():frame().h
+    -- })
     -- window:maximize()
 
     -- hs.timer.doAfter(.5, function()
@@ -114,6 +123,7 @@ function maximizeWindow(window)
                               (window:frame().w == window:screen():frame().w and window:frame().h ==
                                   window:screen():frame().h)
         if maximized then
+            hs.window.animationDuration = originalAnimationDuration
             return true
         else
             logAction("(hack) Re-maximizing window, first attempt failed", {window})
@@ -128,6 +138,7 @@ function maximizeWindow(window)
             -- window:maximize()
         end
     end, 0.2, 3, function()
+        hs.window.animationDuration = originalAnimationDuration
         logWarning("Failed to maximize window after 3 attempts")
     end)
     -- end)
