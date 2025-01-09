@@ -15,7 +15,7 @@ local notify = hs.notify
 local application = hs.application
 
 require("screen_color_and_brightness")
-require("night_blocking")
+-- require("night_blocking")
 
 ---------------------------
 -- WIP / not sure about yet
@@ -23,6 +23,7 @@ require("night_blocking")
 -- New finder windows annoying
 -- Without this, it's just... stupid
 require("windows/window_management")
+require("audio_devices")
 
 ------------------------------------------------
 -- Annoying things to be enabled while developing

@@ -21,22 +21,29 @@ end
 
 -- Utility function to format details for log
 local function formatDetailsForLog(details)
+    if type(details) ~= "table" then
+        return tostring(details) .. "\n"
+    end
+
     local logMessage = ""
     for key, value in pairs(details) do
+        local keyLabel = type(key) == "number" and "" or (key .. ": ")
         logMessage = logMessage .. "\t"
+
         if type(value) == "userdata" and value and value.frame and value:frame() then
             if type(value.isScreen) == "function" and value:isScreen() then
-                logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) .. formatScreenForLog(value)
+                logMessage = logMessage .. keyLabel .. formatScreenForLog(value)
             elseif type(value.isWindow) == "function" and value:isWindow() then
-                logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) .. formatWindowForLog(value)
+                logMessage = logMessage .. keyLabel .. formatWindowForLog(value)
             else
-                logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) ..
-                                 (value ~= nil and tostring(value) or "(none)")
+                logMessage = logMessage .. keyLabel .. (value ~= nil and tostring(value) or "(none)")
             end
             logMessage = logMessage .. " (type:" .. type(value) .. ")"
+        elseif type(value) == "table" then
+            logMessage = logMessage .. keyLabel .. "\n"
+            logMessage = logMessage .. formatDetailsForLog(value)
         else
-            logMessage = logMessage .. (type(key) == "number" and "" or (key .. ": ")) ..
-                             (value ~= nil and tostring(value) or "(none)")
+            logMessage = logMessage .. keyLabel .. (value ~= nil and tostring(value) or "(none)")
         end
         logMessage = logMessage .. "\n"
     end
@@ -121,7 +128,8 @@ local fileEmojis = {
     ["caffeinate.lua"] = "☕",
     ["app_utils.lua"] = "📱",
     ["fresh_unlock.lua"] = "🔓",
-    ["night_blocking.lua"] = "🌙"
+    ["night_blocking.lua"] = "🌙",
+    ["audio_devices.lua"] = "🎧"
 }
 
 local lastLogTime = os.time()
@@ -220,4 +228,3 @@ function logWarning(message, details)
         }
     }, 3)
 end
-
