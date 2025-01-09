@@ -4,14 +4,12 @@
 -- Manages audio devices
 -- - Prioritized list of input devices
 -------------------------------------------------------
-
-
 require("utils/log")
 
 -- List of input devices, in priority order
 -- Do *not* modify the names in this list / the apostrophes
-local preferredInputDevices = {"C922 Pro Stream Webcam", "Brett's AirPods", "Brett's AirPods Pro", "Brett's AirPods",
-                               "Brett's AirPods Pro"}
+local preferredInputDevices = {"C922 Pro Stream Webcam", "Brett’s AirPods", "Brett’s AirPods Pro",
+                               "Brett’s AirPods Pro", "Brett’s AirPods"}
 
 local function setInputDevice(dev)
     log("Ensuring input device is set to:", dev:name())
@@ -58,10 +56,9 @@ end
 
 local function setDefaultInputByPriority()
     local audioDevices = hs.audiodevice.allInputDevices()
-    local currentDefault = hs.audiodevice.defaultInputDevice()
-    log("Checking to see if we need to switch input device", {
-        currentInputDevice = currentDefault,
-        audioDevices = audioDevices
+    log("Ensuring input device is set by priority", {
+        audioDevices = audioDevices,
+        currentInputDevice = hs.audiodevice.defaultInputDevice()
     })
 
     local switchedToBuiltIn = useBuiltinIfInOffice()
@@ -77,7 +74,8 @@ local function setDefaultInputByPriority()
             end
         end
     end
-    print("No preferred input device found.")
+
+    logWarning("No preferred input device found; input device was not changed")
 end
 
 -- Watch for changes in audio devices
@@ -91,5 +89,3 @@ watcher.setCallback(function(event)
     end
 end)
 watcher.start()
-
-setDefaultInputByPriority()
