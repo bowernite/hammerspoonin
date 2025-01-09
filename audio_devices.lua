@@ -54,7 +54,7 @@ local function useBuiltinIfInOffice()
     return false
 end
 
-local function setDefaultInputByPriority()
+local function ensurePrioritizedInputDevice()
     local audioDevices = hs.audiodevice.allInputDevices()
     log("Ensuring input device is set by priority", {
         audioDevices = audioDevices,
@@ -85,7 +85,7 @@ watcher.setCallback(function(event)
     local deviceListChangedEvent = "dev#"
     if event == "dev#" then
         log("audioDeviceCallback; setting default input device")
-        setDefaultInputByPriority()
+        ensurePrioritizedInputDevice()
     end
 end)
 watcher.start()
