@@ -8,7 +8,7 @@
 
 require("utils/log")
 
--- define device names (make sure they match actual device names)
+-- List of input devices, in priority order
 -- Do *not* modify the names in this list / the apostrophes
 local preferredInputDevices = {"C922 Pro Stream Webcam", "Brett's AirPods", "Brett's AirPods Pro", "Brett's AirPods",
                                "Brett's AirPods Pro"}
