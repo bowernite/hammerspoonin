@@ -57,7 +57,7 @@ function isWithinTimeWindow(startTime, endTime)
 end
 
 function isNighttime()
-    return isWithinTimeWindow("7pm", "5am")
+    return isWithinTimeWindow("5pm", "5am")
 end
 
 function poll(fn, intervalInSeconds, maxAttempts, onMaxAttemptsReached)
