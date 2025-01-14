@@ -134,6 +134,12 @@ local fileEmojis = {
 
 local lastLogTime = os.time()
 
+local BLACKLIST_RULES = {{
+    filename = "window_utils.lua"
+}, {
+    filename = "window_management.lua"
+}}
+
 -- Convenience logger function, with lots of useful functionality
 function log(message, details, styleOptions, level)
     -- Add newlines every 30 minutes, to visualize the time elapsed between logs
@@ -148,6 +154,11 @@ function log(message, details, styleOptions, level)
     -- Get the filename of the calling script
     local stackLevel = level or 2
     local filename = debug.getinfo(stackLevel, "S").source:match("^.+/(.+)$")
+    for _, rule in ipairs(BLACKLIST_RULES) do
+        if rule.filename == filename and stackLevel <= 2 then
+            return
+        end
+    end
     local emoji = fileEmojis[filename] or "🔍"
 
     local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " .. message

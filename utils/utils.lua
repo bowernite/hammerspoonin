@@ -101,6 +101,9 @@ function throttle(func, cooldownPeriod)
     end
 end
 
+-- Initialize global table for timers if it doesn't exist. Timers are stored in this table to prevent garbage collection.
+_G.dailyTaskTimers = _G.dailyTaskTimers or {}
+
 function createDailyTask(resetTime, taskFunction, taskName)
     local hasRunToday = false
     local resetTimer = nil
@@ -110,8 +113,8 @@ function createDailyTask(resetTime, taskFunction, taskName)
         hasRunToday = false
     end
 
-    -- Store timer in variable to prevent garbage collection
     resetTimer = hs.timer.doAt(resetTime, "1d", resetState)
+    table.insert(_G.dailyTaskTimers, resetTimer)
 
     return function()
         local currentTime = os.date("*t")
