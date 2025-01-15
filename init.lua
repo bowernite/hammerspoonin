@@ -15,6 +15,7 @@ local notify = hs.notify
 local application = hs.application
 
 require("screen_color_and_brightness")
+-- Cold Turkey is fine for now
 -- require("night_blocking")
 
 ---------------------------
@@ -28,10 +29,11 @@ require("audio_devices")
 ------------------------------------------------
 -- Annoying things to be enabled while developing
 ------------------------------------------------
-require("reset_apps")
-resetAppsEveryMorning()
-require("boot")
-defaultAppState()
+-- Do I really need this? It's good in theory, but it _is_ complicating my life
+-- require("reset_apps")
+-- resetAppsEveryMorning()
+-- require("boot")
+-- defaultAppState()
 -- require("morning_space")
 
 -- Current Finder functionality is buggy -- we can pick this up later

@@ -82,8 +82,6 @@ restartVividIfNotNighttime()
 fluxTimer = hs.timer.doEvery(600, handleFluxState)
 addWakeWatcher(handleFluxState)
 
-
-
 local function maxOutBrightness()
     log("Screen unlocked; checking to see if we need to max out brightness", {
         isNighttime = isNighttime(),
