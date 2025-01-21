@@ -208,7 +208,7 @@ function logAction(message, details)
 end
 
 -- Logger function for errors
-function logError(message, details)
+function logError(message, details, notificationMessage)
     log(message, details, {
         color = {
             red = 1,
@@ -221,7 +221,7 @@ function logError(message, details)
             blue = 0
         }
     }, 3)
-    hs.notify.show("❌ Hammerspoon error", "", details)
+    hs.notify.show(message or "❌ Hammerspoon error", "", notificationMessage or "")
 end
 
 -- Logger function for warnings

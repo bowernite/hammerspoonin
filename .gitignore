@@ -1,1 +1,3 @@
 !.vscode/*
+logs/*
+private.lua
