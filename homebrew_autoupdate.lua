@@ -93,9 +93,9 @@ local function updateHomebrew()
     end
 end
 
--- Run every 12 hours (43200 seconds)
-local TWELVE_HOURS_IN_SECONDS = 12 * 60 * 60
-local timer = hs.timer.doEvery(TWELVE_HOURS_IN_SECONDS, updateHomebrew)
+-- Run every hour (3600 seconds)
+local ONE_HOUR_IN_SECONDS = 60 * 60
+local timer = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew)
 timer:start()
 
 -- While testing, run it immediately
