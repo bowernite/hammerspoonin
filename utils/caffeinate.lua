@@ -37,13 +37,13 @@ watcher = hs.caffeinate.watcher.new(function(eventType)
         isSleepEvent = true
     elseif eventType == hs.caffeinate.watcher.screensDidSleep then
         eventName = "Screen Slept"
-        isSleepEvent = true
+        isSleepEvent = false
     elseif eventType == hs.caffeinate.watcher.systemWillSleep then
         eventName = "System Will Sleep"
         isSleepEvent = true
     elseif eventType == hs.caffeinate.watcher.sessionDidResignActive then
         eventName = "Session Resigned Active"
-        isSleepEvent = true
+        isSleepEvent = false
     end
 
     if eventName ~= "" then
