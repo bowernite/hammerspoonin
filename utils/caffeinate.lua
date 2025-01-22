@@ -25,13 +25,13 @@ watcher = hs.caffeinate.watcher.new(function(eventType)
         isWakeEvent = true
     elseif eventType == hs.caffeinate.watcher.screensDidWake then
         eventName = "Screen Woke"
-        isWakeEvent = true
+        isWakeEvent = false
     elseif eventType == hs.caffeinate.watcher.systemDidWake then
         eventName = "System Woke"
-        isWakeEvent = true
+        isWakeEvent = false
     elseif eventType == hs.caffeinate.watcher.sessionDidBecomeActive then
         eventName = "Session Became Active"
-        isWakeEvent = true
+        isWakeEvent = false
     elseif eventType == hs.caffeinate.watcher.screensDidLock then
         eventName = "Screen Locked"
         isSleepEvent = true
@@ -47,7 +47,8 @@ watcher = hs.caffeinate.watcher.new(function(eventType)
     end
 
     if eventName ~= "" then
-        log("Caffeinate event: " .. eventName)
+        log("Caffeinate event: " .. eventName .. ". isWakeEvent: " .. tostring(isWakeEvent) .. ". isSleepEvent: " ..
+                tostring(isSleepEvent))
         if isWakeEvent then
             notifyListeners(wakeListeners, eventType)
         elseif isSleepEvent then
