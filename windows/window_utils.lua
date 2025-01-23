@@ -29,6 +29,18 @@ function isMainWindow(window)
     return (role == "AXWindow" and (subrole == "AXStandardWindow" or subrole == ""))
 end
 
+function isWindowTopLeft(window)
+    local windowFrame = window:frame()
+    local screenFrame = window:screen():frame()
+    log("isWindowTopLeft check: ", {
+        windowX = windowFrame.x,
+        windowY = windowFrame.y,
+        screenX = screenFrame.x,
+        screenY = screenFrame.y
+    })
+    return windowFrame.x == screenFrame.x and windowFrame.y == screenFrame.y
+end
+
 function isWindowMaximized(window)
     return window:isFullScreen() or
                (window:frame().w == window:screen():frame().w and window:frame().h == window:screen():frame().h)
@@ -95,55 +107,34 @@ function maximizeWindow(window)
 
     logAction("Maximizing window", {window})
 
-    local originalAnimationDuration = hs.window.animationDuration
-
-    -- An attempt to circumvent issues where e.g. the size adjustment happens while the window is moving, and therefore doesn't take up the full size of the screen
-    hs.window.animationDuration = 0
-
-    -- Apparently, this might help the slightly off issues, i.e. when the window isn't _quite_ at the top, etc.
-    -- https://github.com/Hammerspoon/hammerspoon/blob/cdd19a5def652540af23e0219acfce5296c3ae7a/extensions/window/window.lua#L392
-    window:setFrameWithWorkarounds({
+    window:setTopLeft({
         x = 0,
-        y = 0,
-        w = window:screen():frame().w,
-        h = window:screen():frame().h
+        y = 0
     })
 
-    -- window:setTopLeft({
-    --     x = 0,
-    --     y = 0
-    -- })
-    -- window:setSize({
-    --     w = window:screen():frame().w,
-    --     h = window:screen():frame().h
-    -- })
-    -- window:maximize()
+    hs.timer.doAfter(1, function()
+        poll(function()
+            local maximized = window:isFullScreen() or
+                                  (window:frame().w == window:screen():frame().w and window:frame().h ==
+                                      window:screen():frame().h)
+            if maximized then
+                return true
+            else
+                logAction("(hack) Re-maximizing window, first attempt failed", {window})
 
-    -- hs.timer.doAfter(.5, function()
-    poll(function()
-        local maximized = window:isFullScreen() or
-                              (window:frame().w == window:screen():frame().w and window:frame().h ==
-                                  window:screen():frame().h)
-        if maximized then
-            hs.window.animationDuration = originalAnimationDuration
-            return true
-        else
-            logAction("(hack) Re-maximizing window, first attempt failed", {window})
-            window:setTopLeft({
-                x = 0,
-                y = 0
-            })
-            window:setSize({
-                w = window:screen():frame().w,
-                h = window:screen():frame().h
-            })
-            -- window:maximize()
-        end
-    end, 0.2, 3, function()
-        hs.window.animationDuration = originalAnimationDuration
-        logWarning("Failed to maximize window after 3 attempts")
+                if not isWindowTopLeft(window) then
+                    window:setTopLeft({
+                        x = 0,
+                        y = 0
+                    })
+                else
+                    window:maximize()
+                end
+            end
+        end, 1, 4, function()
+            logWarning("Failed to maximize window after 4 attempts")
+        end)
     end)
-    -- end)
 
     maximizedWindows[window:id()] = true
 

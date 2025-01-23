@@ -36,6 +36,9 @@ BLACKLIST_RULES = {{
 }, {
     app = "Google Chrome",
     window = "PayPal - Google Chrome - Brett"
+}, {
+    -- Google auth window
+    window = "Sign in - Google Accounts"
 }}
 
 -- Function to check if a window is blacklisted
@@ -56,7 +59,14 @@ function isWindowBlacklisted(window)
     end
 
     for _, rule in ipairs(BLACKLIST_RULES) do
-        if (not rule.app or appName == rule.app) and (not rule.window or windowName == rule.window) then
+        local ruleIsEmpty = not rule.app and not rule.window
+        if ruleIsEmpty then
+            return false
+        end
+
+        local appMatch = not rule.app or appName == rule.app
+        local windowMatch = not rule.window or (windowName and windowName:find(rule.window))
+        if appMatch and windowMatch then
             return true
         end
     end
