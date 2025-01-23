@@ -99,4 +99,4 @@ local timer = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew)
 timer:start()
 
 -- While testing, run it immediately
-updateHomebrew()
+-- updateHomebrew()

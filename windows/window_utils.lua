@@ -1,5 +1,7 @@
 require("utils/log")
 
+hs.window.animationDuration = 0
+
 function isMainWindow(window)
     local role = window:role()
     local subrole = window:subrole()
@@ -105,40 +107,38 @@ function maximizeWindow(window)
         return false
     end
 
-    logAction("Maximizing window", {window})
+    maximizeWindowManually(window)
 
-    window:setTopLeft({
-        x = 0,
-        y = 0
-    })
-
-    hs.timer.doAfter(1, function()
-        poll(function()
-            local maximized = window:isFullScreen() or
-                                  (window:frame().w == window:screen():frame().w and window:frame().h ==
-                                      window:screen():frame().h)
-            if maximized then
-                return true
-            else
-                logAction("(hack) Re-maximizing window, first attempt failed", {window})
-
-                if not isWindowTopLeft(window) then
-                    window:setTopLeft({
-                        x = 0,
-                        y = 0
-                    })
-                else
-                    window:maximize()
-                end
-            end
-        end, 1, 4, function()
-            logWarning("Failed to maximize window after 4 attempts")
+    local delay = 0.3
+    hs.timer.doAfter(delay, function()
+        maximizeWindowManually(window)
+        hs.timer.doAfter(delay, function()
+            maximizeWindowManually(window)
         end)
     end)
 
     maximizedWindows[window:id()] = true
 
     return true
+end
+
+function maximizeWindowManually(window)
+    if isWindowMaximized(window) then
+        return
+    end
+
+    if not isWindowTopLeft(window) then
+        logAction("Maximize Window: Window is not at top left; putting there first", {window})
+        local screen = window:screen()
+        local frame = screen:frame()
+        window:setTopLeft({
+            x = 0,
+            y = 0
+        })
+    else
+        logAction("Maximize Window: Window is at top left; maximizing", {window})
+        window:maximize()
+    end
 end
 
 function centerWindow(window)
