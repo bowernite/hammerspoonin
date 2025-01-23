@@ -1,5 +1,7 @@
 require("utils/log")
 
+local location = hs.location
+
 function isProcessRunning(processName)
     local command = "pgrep " .. processName
     local output = hs.execute(command)
@@ -57,7 +59,47 @@ function isWithinTimeWindow(startTime, endTime)
 end
 
 function isNighttime()
-    return isWithinTimeWindow("5pm", "5am")
+    local currentLocation = hs.location.get()
+    if not currentLocation then
+        -- This weirdly happens on startup, but then gets called again to correct itself..?
+        logWarning("No location found; using Milwaukee location")
+        local milwaukeeLocation = {
+            latitude = 43.0389,
+            longitude = -87.9065
+        }
+        currentLocation = milwaukeeLocation
+    end
+
+    local dstOffset = hs.location.dstOffset() / 60
+    local sunrise = hs.location.sunrise(currentLocation.latitude, currentLocation.longitude, dstOffset)
+    local sunset = hs.location.sunset(currentLocation.latitude, currentLocation.longitude, dstOffset)
+    log("Sunrise and sunset", {
+        sunrise = sunrise,
+        sunset = sunset,
+        sunriseReadable = os.date("%Y-%m-%d %H:%M:%S", sunrise),
+        sunsetReadable = os.date("%Y-%m-%d %H:%M:%S", sunset)
+    })
+
+    if not sunrise or sunrise == "N/R" or not sunset or sunset == "N/R" then
+        logError("isNighttime: No sunrise or sunset found; using default time window")
+        return isWithinTimeWindow("5pm", "5am")
+    end
+
+    -- sunrise, sunset, and current time are all seconds since the epoch
+    local currentTime = os.time()
+    log("Current time", {
+        currentTime = currentTime,
+        currentTimeReadable = os.date("%Y-%m-%d %H:%M:%S", currentTime)
+    })
+    local beforeSunrise = currentTime < sunrise
+    local afterSunset = currentTime > sunset
+    local itIsNighttime = beforeSunrise or afterSunset
+    log("Nighttime check (using sunrise/sunset)", {
+        itIsNighttime = itIsNighttime,
+        beforeSunrise = beforeSunrise,
+        afterSunset = afterSunset
+    })
+    return itIsNighttime
 end
 
 function poll(fn, intervalInSeconds, maxAttempts, onMaxAttemptsReached)

@@ -13,6 +13,7 @@ local alert = hs.alert
 local fs = hs.fs
 local notify = hs.notify
 local application = hs.application
+local location = hs.location
 
 require("screen_color_and_brightness")
 -- Cold Turkey is fine for now
