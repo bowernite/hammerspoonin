@@ -1,3 +1,5 @@
+require("utils/log_to_file")
+
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
     if not screen then
@@ -192,6 +194,7 @@ function log(message, details, styleOptions, level)
     end
 
     hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
+    logToFile(logMessage, "hammerspoon.log")
 
     lastLogTime = currentTime
 end

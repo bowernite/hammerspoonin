@@ -1,96 +1,83 @@
 require("utils/log")
 require("private")
+require("utils/log_to_file")
 
 local brewCommand = "/opt/homebrew/bin/brew"
 local sudoPassword = getSudoPassword()
 
-local function appendToLog(message)
-    -- Ensure logs directory exists
-    os.execute("mkdir -p logs")
-
-    -- Try to open file in append mode first
-    local logFile = io.open("logs/homebrew_updates.log", "a")
-    if not logFile then
-        -- If that fails, try to create the file
-        logFile = io.open("logs/homebrew_updates.log", "w")
-    end
-
-    if logFile then
-        local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-        logFile:write(string.format("[%s] %s\n", timestamp, message))
-        logFile:close()
-    end
+local function logToHomebrewLogfile(message)
+    logToFile(message, "homebrew_updates.log")
 end
 
 local function runCommand(command)
     return io.popen(command)
 end
 
-local function updateHomebrew()
-    -- Initial notification
-    hs.notify.show("Homebrew Update", "", "Starting Homebrew updates")
+local function executeBrewCommand(command, description)
+    hs.notify.show("Homebrew Update", "", description)
+    logToHomebrewLogfile("Running: " .. command)
 
+    local output = runCommand(brewCommand .. " " .. command .. " 2>&1")
+    local result = output:read("*all")
+    output:close()
+
+    logToHomebrewLogfile("Output:\n" .. result)
+    return result
+end
+
+local function isUpdateSuccessful(result)
+    return result:match("Already up%-to%-date") ~= nil or result:match("Updated") ~= nil
+end
+
+local function isCommandSuccessful(result)
+    return result:match("Error:") == nil
+end
+
+local function updateHomebrew()
+    hs.notify.show("Homebrew Update", "", "Starting Homebrew updates")
     logAction("Running Homebrew update and upgrade")
 
     -- Update
-    hs.notify.show("Homebrew Update", "", "Running brew update...")
-    appendToLog("Running: brew update")
-    local updateOutput = runCommand(brewCommand .. " update 2>&1")
-    local updateResult = updateOutput:read("*all")
-    updateOutput:close()
-    appendToLog("Output:\n" .. updateResult)
-    local updateSuccess = updateResult:match("Already up%-to%-date") ~= nil or updateResult:match("Updated") ~= nil
-
-    if updateSuccess then
-        log("Homebrew update completed", {
-            updateResult = updateResult
-        })
-        hs.notify.show("Homebrew Update", "", "Update completed successfully")
-
-        -- Upgrade formulae
-        hs.notify.show("Homebrew Update", "", "Running brew upgrade...")
-        appendToLog("Running: brew upgrade")
-        local upgradeOutput = runCommand(brewCommand .. " upgrade 2>&1")
-        local upgradeResult = upgradeOutput:read("*all")
-        upgradeOutput:close()
-        appendToLog("Output:\n" .. upgradeResult)
-        local upgradeSuccess = upgradeResult:match("Error:") == nil
-
-        if upgradeSuccess then
-            log("Homebrew formula upgrade completed", {
-                upgradeResult = upgradeResult
-            })
-            hs.notify.show("Homebrew Update", "", "Formula upgrades completed successfully")
-
-            -- Upgrade casks
-            hs.notify.show("Homebrew Update", "", "Running cask upgrades...")
-            appendToLog("Running: brew upgrade --cask")
-            local caskOutput = runCommand(brewCommand .. " upgrade --cask 2>&1")
-            local caskResult = caskOutput:read("*all")
-            caskOutput:close()
-            appendToLog("Output:\n" .. caskResult)
-            local caskSuccess = caskResult:match("Error:") == nil
-
-            if caskSuccess then
-                log("Homebrew cask upgrade completed", {
-                    caskResult = caskResult
-                })
-                hs.notify.show("Homebrew Update", "", "All updates completed successfully")
-            else
-                logError("Homebrew cask upgrade failed", {
-                    caskResult = caskResult
-                })
-            end
-        else
-            logError("Homebrew formula upgrade failed", {
-                upgradeResult = upgradeResult
-            }, upgradeResult)
-        end
-    else
+    local updateResult = executeBrewCommand("update", "Running brew update...")
+    if not isUpdateSuccessful(updateResult) then
         logError("Homebrew update failed", {
             updateResult = updateResult
         }, updateResult)
+        return
     end
+
+    log("Homebrew update completed", {
+        updateResult = updateResult
+    })
+    hs.notify.show("Homebrew Update", "", "Update completed successfully")
+
+    -- Upgrade formulae
+    local upgradeResult = executeBrewCommand("upgrade", "Running brew upgrade...")
+    if not isCommandSuccessful(upgradeResult) then
+        logError("Homebrew formula upgrade failed", {
+            upgradeResult = upgradeResult
+        }, upgradeResult)
+        return
+    end
+
+    log("Homebrew formula upgrade completed", {
+        upgradeResult = upgradeResult
+    })
+    hs.notify.show("Homebrew Update", "", "Formula upgrades completed successfully")
+
+    -- Upgrade casks
+    local caskResult = executeBrewCommand("upgrade --cask", "Running cask upgrades...")
+    if not isCommandSuccessful(caskResult) then
+        logError("Homebrew cask upgrade failed", {
+            caskResult = caskResult
+        })
+        return
+    end
+
+    log("Homebrew cask upgrade completed", {
+        caskResult = caskResult
+    })
+    hs.notify.show("Homebrew Update", "", "All updates completed successfully")
 end
 
 -- Run every hour (3600 seconds)
