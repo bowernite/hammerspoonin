@@ -7,13 +7,16 @@ hs.console.consoleFont({
 hs.ipc.cliInstall()
 
 -- Preload common modules
-local fnutils = hs.fnutils
-local styledtext = hs.styledtext
-local alert = hs.alert
-local fs = hs.fs
-local notify = hs.notify
-local application = hs.application
-local location = hs.location
+-- experiment: Delaying 5 seconds, so Hammerspoon is responsive quicker on startup..?
+-- hs.timer.doAfter(5, function()
+--     local fnutils = hs.fnutils
+--     local styledtext = hs.styledtext
+--     local alert = hs.alert
+--     local fs = hs.fs
+--     local notify = hs.notify
+--     local application = hs.application
+--     local location = hs.location
+-- end)
 
 require("screen_color_and_brightness")
 -- Cold Turkey is fine for now

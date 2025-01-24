@@ -1,83 +1,14 @@
 require("utils/log")
 require("windows/window_utils")
+require("windows/default_window_sizes")
+require("windows/window_blacklist")
 require("utils/caffeinate")
 
-BLACKLIST_RULES = {{
-    app = "Bartender 5"
-}, {
-    app = "Archive Utility"
-}, {
-    app = "iPhone Mirroring"
-}, {
-    app = "Alfred",
-    window = "Alfred"
-}, {
-    app = "Vivid"
-}, {
-    app = "Remotasks"
-}, {
-    app = "Remotasks Helper"
-}, {
-    app = "Calculator"
-}, {
-    app = "Captive Network Assistant"
-}, {
-    window = "Software Update"
-}, {
-    app = "Security Agent"
-}, {
-    app = "Homerow"
-}, {
-    app = "superwhisper"
-}, {
-    window = "Untitled"
-}, {
-    app = "coreautha"
-}, {
-    app = "Google Chrome",
-    window = "PayPal - Google Chrome - Brett"
-}, {
-    -- Google auth window
-    window = "Sign in - Google Accounts"
-}}
-
--- Function to check if a window is blacklisted
-function isWindowBlacklisted(window)
-    if not window or not window:application() then
-        return true
-    end
-    local appName = window:application():name()
-    local windowName = window:title()
-    -- Chrome apps like Notion and Trello for some reason don't have a window name
-    if not appName or appName == "" or (not windowName or windowName == "") and appName ~= "Notion" and appName ~=
-        "Trello" then
-        return true
-    end
-
-    if not isMainWindow(window) then
-        return true
-    end
-
-    for _, rule in ipairs(BLACKLIST_RULES) do
-        local ruleIsEmpty = not rule.app and not rule.window
-        if ruleIsEmpty then
-            return false
-        end
-
-        local appMatch = not rule.app or appName == rule.app
-        local windowMatch = not rule.window or (windowName and windowName:find(rule.window))
-        if appMatch and windowMatch then
-            return true
-        end
-    end
-    return false
-end
-
 windowScreenMap = {}
-centeredWindows = {} -- Dictionary to keep track of centered windows
-maximizedWindows = {} -- Dictionary to keep track of maximized windows
+centeredWindows = {}
+maximizedWindows = {}
 
-function updateWindowScreenMap(window)
+local function updateWindowScreenMap(window)
     if isWindowBlacklisted(window) then
         return
     end
@@ -88,7 +19,7 @@ function updateWindowScreenMap(window)
 end
 
 -- Function to update window screen map, screen dimensions, centered and maximized windows
-function initWindowStates()
+local function initWindowStates()
     log("Initializing window states")
     local allWindows = hs.window.allWindows()
     for _, window in ipairs(allWindows) do
@@ -108,7 +39,7 @@ function initWindowStates()
     end
 end
 
-function adjustWindowIfNecessary(window)
+local function adjustWindowIfNecessary(window)
     if isWindowBlacklisted(window) then
         log("Exiting due to blacklisted window", {window})
         return
@@ -146,97 +77,6 @@ function adjustWindowIfNecessary(window)
     centeredWindows[windowID] = isWindowCentered(window)
 end
 
-function setDefaultRemotasksWindowSizes(window)
-    local screenFrame = window:screen():frame()
-    local screenWidth = screenFrame.w
-    local screenHeight = screenFrame.h
-    local minRemotasksWidth = 900
-    local remotasksWidth, helperWidth
-    local menuBarHeight = hs.screen.primaryScreen():frame().y
-
-    if screenWidth / 2 > minRemotasksWidth then
-        remotasksWidth = screenWidth / 2
-    else
-        remotasksWidth = minRemotasksWidth
-    end
-
-    helperWidth = screenWidth - remotasksWidth
-
-    if appName == "Remotasks" then
-        window:setFrame({
-            x = 0,
-            y = menuBarHeight,
-            w = remotasksWidth,
-            h = screenHeight - menuBarHeight
-        })
-    elseif appName == "Remotasks Helper" then
-        window:setFrame({
-            x = remotasksWidth,
-            y = menuBarHeight,
-            w = helperWidth,
-            h = screenHeight - menuBarHeight
-        })
-    end
-end
-
-function setDefaultWindowSize(window)
-    local appName = window:application():name()
-    local defaultSizes = {
-        ["Finder"] = {
-            w = 800,
-            h = 600
-        },
-        ["Notes"] = {
-            w = 1000,
-            h = 1000
-        },
-        ["System Settings"] = {
-            w = 800,
-            h = 600
-        },
-        ["Reminders"] = {
-            w = 700,
-            h = 600
-        },
-        ["Clock"] = {
-            w = 650,
-            h = 670
-        },
-        ["Messages"] = {
-            w = 1000,
-            h = 800
-        },
-        ["Contacts"] = {
-            w = 700,
-            h = 700
-        },
-        ["Cold Turkey Blocker"] = {
-            w = 1000,
-            h = 1000
-        }
-    }
-
-    local centerOnlyApps = {
-        ["Preview"] = true
-    }
-
-    -- log("App Name: " .. appName)
-    if defaultSizes[appName] then
-        log("Default size found for app")
-        local size = defaultSizes[appName]
-        window:setSize(size)
-        centerWindow(window)
-    elseif appName == "Remotasks" or appName == "Remotasks Helper" then
-        setDefaultRemotasksWindowSizes(window)
-    elseif centerOnlyApps[appName] then
-        centerWindow(window)
-    else
-        if not maximizeWindow(window) then
-            centerWindow(window)
-        end
-    end
-end
-
 local function handleWindowEvent(window, eventType)
     if isWindowBlacklisted(window) then
         return
@@ -257,24 +97,6 @@ local function handleWindowEvent(window, eventType)
 
     local windowID = window:id()
     maximizedWindows[windowID] = isWindowMaximized(window)
-
-    -- adjustWindowIfNecessary(window)
-
-    -- Maximize windows for specific apps
-    -- WIP
-    -- local app = window:application():name()
-    -- if app == "Google Chrome" or app == "Notion Calendar" or app == "kitty" or
-    --     app == "Trello" then
-    --     if window:title() ~= "" then
-    --         if app == "superwhisper" then
-    --             window:centerOnScreen(nil, true, 0)
-    --         else
-    --             maximizeWindow(window)
-    --         end
-    --     else
-    --         log("Skipped maximizing due to empty window title", {app})
-    --     end
-    -- end
 end
 
 -- https://www.hammerspoon.org/docs/hs.window.filter.html
@@ -282,51 +104,51 @@ windowWatcher = hs.window.filter.new(nil)
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     handleWindowEvent(window, "created")
 end)
-windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
-    handleWindowEvent(window, "moved")
-end)
+-- windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
+--     handleWindowEvent(window, "moved")
+-- end)
 windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
     handleWindowEvent(window, "focused")
 end)
 -- 9/4/24: Trying to fix bug where focus event doesn't fire on first focus (but does fire on subsequent focus)
 -- TODO: Remove / isolate these if it's fixed, or remove if the wake watcher handles this
-windowWatcher:subscribe(hs.window.filter.windowOnScreen, function(window)
-    handleWindowEvent(window, "onScreen")
-end)
-windowWatcher:subscribe(hs.window.filter.windowVisible, function(window)
-    handleWindowEvent(window, "visible")
-end)
+-- windowWatcher:subscribe(hs.window.filter.windowOnScreen, function(window)
+--     handleWindowEvent(window, "onScreen")
+-- end)
+-- windowWatcher:subscribe(hs.window.filter.windowVisible, function(window)
+--     handleWindowEvent(window, "visible")
+-- end)
 
+function adjustAllWindows()
+    local allWindows = hs.window.allWindows()
+    for _, window in ipairs(allWindows) do
+        adjustWindowIfNecessary(window)
+    end
+end
+
+-- "Creates a new screen-watcher that is also called when the active screen changes." (in addition to "when a change in the screen layout occurs")
+-- https://www.hammerspoon.org/docs/hs.screen.watcher.html#newWithActiveScreen
 hs.screen.watcher.newWithActiveScreen(function()
     log("newWithActiveScreen watcher called; adjusting windows", {
         primaryScreen = hs.screen.primaryScreen(),
         mainScreen = hs.screen.mainScreen()
     })
-    hs.timer.doAfter(8, function()
-        local allWindows = hs.window.allWindows()
-        for _, window in ipairs(allWindows) do
-            if window:screen() == hs.screen.primaryScreen() then
-                adjustWindowIfNecessary(window)
-            end
-        end
+    hs.timer.doAfter(4, function()
+        logAction("Adjusting windows after 8 second delay (newWithActiveScreen watcher)")
+        adjustAllWindows()
     end)
 end):start()
 
-addWakeWatcher(function()
-    logAction("wake watcher called; adjusting windows", {
-        primaryScreen = hs.screen.primaryScreen(),
-        mainScreen = hs.screen.mainScreen()
-    })
-    hs.timer.doAfter(1, function()
-        local allWindows = hs.window.allWindows()
-        for _, window in ipairs(allWindows) do
-            if window:screen() == hs.screen.primaryScreen() then
-                adjustWindowIfNecessary(window)
-            end
-        end
-    end)
-end)
+-- experiment: testing out to see if newWithActiveScreen watcher handles this use case
+-- addWakeWatcher(function()
+--     logAction("wake watcher called; adjusting windows", {
+--         primaryScreen = hs.screen.primaryScreen(),
+--         mainScreen = hs.screen.mainScreen()
+--     })
+--     hs.timer.doAfter(1, function()
+--         adjustAllWindows()
+--     end)
+-- end)
 
--- Initialize
 initWindowStates()
 

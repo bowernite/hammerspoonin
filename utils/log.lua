@@ -1,4 +1,10 @@
 require("utils/log_to_file")
+require("utils/log_emojis")
+
+local BLACKLIST_RULES = {
+    { filename = "window_utils.lua" },
+    { filename = "window_management.lua" }
+}
 
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
@@ -115,32 +121,7 @@ local function ensureContrast(color, isBlackBackground)
     return adjustedColor
 end
 
--- Mapping of filenames to emojis
-local fileEmojis = {
-    ["window_utils.lua"] = "🪟",
-    ["window_management.lua"] = "🪟",
-    ["log.lua"] = "📘",
-    ["utils.lua"] = "🔧",
-    ["boot.lua"] = "🚀",
-    ["init.lua"] = "🔄",
-    ["screen_color_and_brightness.lua"] = "🔆",
-    ["morning_space.lua"] = "🌅",
-    ["reset_apps.lua"] = "🔄",
-    ["disconnect_from_wifi_when_on_ethernet.lua"] = "📶",
-    ["caffeinate.lua"] = "☕",
-    ["app_utils.lua"] = "📱",
-    ["fresh_unlock.lua"] = "🔓",
-    ["night_blocking.lua"] = "🌙",
-    ["audio_devices.lua"] = "🎧"
-}
-
 local lastLogTime = os.time()
-
-local BLACKLIST_RULES = {{
-    filename = "window_utils.lua"
-}, {
-    filename = "window_management.lua"
-}}
 
 -- Convenience logger function, with lots of useful functionality
 function log(message, details, styleOptions, level)
@@ -161,7 +142,7 @@ function log(message, details, styleOptions, level)
             return
         end
     end
-    local emoji = fileEmojis[filename] or "🔍"
+    local emoji = FILE_EMOJIS[filename] or "🔍"
 
     local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " .. message
     if details then

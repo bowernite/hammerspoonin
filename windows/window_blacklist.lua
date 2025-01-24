@@ -1,0 +1,67 @@
+BLACKLIST_RULES = {{
+    app = "Bartender 5"
+}, {
+    app = "Archive Utility"
+}, {
+    app = "iPhone Mirroring"
+}, {
+    app = "Alfred",
+    window = "Alfred"
+}, {
+    app = "Vivid"
+}, {
+    app = "Calculator"
+}, {
+    app = "Captive Network Assistant"
+}, {
+    window = "Software Update"
+}, {
+    app = "Security Agent"
+}, {
+    app = "Homerow"
+}, {
+    app = "superwhisper"
+}, {
+    window = "Untitled"
+}, {
+    app = "coreautha"
+}, {
+    app = "Google Chrome",
+    window = "PayPal - Google Chrome - Brett"
+}, {
+    -- Google auth window
+    window = "Sign in - Google Accounts"
+}}
+
+-- Function to check if a window is blacklisted
+function isWindowBlacklisted(window)
+    if not window or not window:application() then
+        return true
+    end
+    local appName = window:application():name()
+    local windowName = window:title()
+
+    -- Chrome apps like Notion and Trello for some reason don't have a window name
+    if not appName or appName == "" or (not windowName or windowName == "") and appName ~= "Notion" and appName ~=
+        "Trello" then
+        return true
+    end
+
+    if not isMainWindow(window) then
+        return true
+    end
+
+    for _, rule in ipairs(BLACKLIST_RULES) do
+        local ruleIsEmpty = not rule.app and not rule.window
+        if ruleIsEmpty then
+            return false
+        end
+
+        local appMatch = not rule.app or appName == rule.app
+        local windowMatch = not rule.window or (windowName and windowName:find(rule.window))
+        if appMatch and windowMatch then
+            return true
+        end
+    end
+    return false
+end
