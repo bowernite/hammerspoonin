@@ -94,6 +94,7 @@ function initWindowStates()
     for _, window in ipairs(allWindows) do
         if not isWindowBlacklisted(window) then
             -- Not sure why we were doing this, but experimenting with turning it off to reduce load on load
+            -- Maybe for on boot?
             -- setDefaultWindowSize(window)
 
             updateWindowScreenMap(window)
