@@ -89,10 +89,12 @@ end
 
 -- Function to update window screen map, screen dimensions, centered and maximized windows
 function initWindowStates()
+    log("Initializing window states")
     local allWindows = hs.window.allWindows()
     for _, window in ipairs(allWindows) do
         if not isWindowBlacklisted(window) then
-            setDefaultWindowSize(window)
+            -- Not sure why we were doing this, but experimenting with turning it off to reduce load on load
+            -- setDefaultWindowSize(window)
 
             updateWindowScreenMap(window)
 
