@@ -1,10 +1,12 @@
 require("utils/log_to_file")
 require("utils/log_emojis")
 
-local BLACKLIST_RULES = {
-    { filename = "window_utils.lua" },
-    { filename = "window_management.lua" }
-}
+-- Blacklist rules. Logs will still go to logfiles. Actions and warnings will still be shown in console.
+local BLACKLIST_RULES = {{
+    filename = "window_utils.lua"
+}, {
+    filename = "window_management.lua"
+}}
 
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
@@ -137,11 +139,6 @@ function log(message, details, styleOptions, level)
     -- Get the filename of the calling script
     local stackLevel = level or 2
     local filename = debug.getinfo(stackLevel, "S").source:match("^.+/(.+)$")
-    for _, rule in ipairs(BLACKLIST_RULES) do
-        if rule.filename == filename and stackLevel <= 2 then
-            return
-        end
-    end
     local emoji = FILE_EMOJIS[filename] or "🔍"
 
     local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " .. message
@@ -174,8 +171,14 @@ function log(message, details, styleOptions, level)
         end
     end
 
-    hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
     logToFile(logMessage, "hammerspoon.log")
+
+    for _, rule in ipairs(BLACKLIST_RULES) do
+        if rule.filename == filename and stackLevel <= 2 then
+            return
+        end
+    end
+    hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
 
     lastLogTime = currentTime
 end
