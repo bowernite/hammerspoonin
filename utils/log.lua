@@ -141,9 +141,12 @@ function log(message, details, styleOptions, level)
     local filename = debug.getinfo(stackLevel, "S").source:match("^.+/(.+)$")
     local emoji = FILE_EMOJIS[filename] or "🔍"
 
-    local logMessage = newLines .. "[" .. time .. "] " .. emoji .. " " .. message
+    local consoleMessage = newLines .. "[" .. time .. "] " .. emoji .. " " .. message
+    local fileMessage = newLines .. emoji .. " " .. message
+
     if details then
-        logMessage = logMessage .. "\n" .. formatDetailsForLog(details)
+        consoleMessage = consoleMessage .. "\n" .. formatDetailsForLog(details)
+        fileMessage = fileMessage .. "\n" .. formatDetailsForLog(details)
     end
 
     local isBlackBackground =
@@ -171,14 +174,14 @@ function log(message, details, styleOptions, level)
         end
     end
 
-    logToFile(logMessage, "hammerspoon.log")
+    logToFile(fileMessage, "hammerspoon.log")
 
     for _, rule in ipairs(BLACKLIST_RULES) do
         if rule.filename == filename and stackLevel <= 2 then
             return
         end
     end
-    hs.console.printStyledtext(hs.styledtext.new(logMessage, finalStyle))
+    hs.console.printStyledtext(hs.styledtext.new(consoleMessage, finalStyle))
 
     lastLogTime = currentTime
 end

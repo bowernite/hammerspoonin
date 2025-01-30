@@ -101,6 +101,8 @@ end
 
 -- https://www.hammerspoon.org/docs/hs.window.filter.html
 windowWatcher = hs.window.filter.new(nil)
+-- NOTES:
+-- - created, visible, and onScreen -- none of them solve the Chrome issue, where there is no open window and we open a bookmark via Alfred
 windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
     handleWindowEvent(window, "created")
 end)
@@ -108,9 +110,9 @@ end)
 --     handleWindowEvent(window, "moved")
 -- end)
 -- 1/27/25: Chrome: opening a bookmark via Alfred doesn't trigger a `created` event, so we need to use `focused`, or `onScreen`, or `visible`
--- windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
---     handleWindowEvent(window, "focused")
--- end)
+windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
+    handleWindowEvent(window, "focused")
+end)
 -- 9/4/24: Trying to fix bug where focus event doesn't fire on first focus (but does fire on subsequent focus)
 -- TODO: Remove / isolate these if it's fixed, or remove if the wake watcher handles this
 -- windowOnScreen fires only when a window becomes physically visible on the current screen,
@@ -144,15 +146,15 @@ end
 --     end)
 -- end):start()
 
-addWakeWatcher(function()
-    logAction("wake watcher called; adjusting windows", {
-        primaryScreen = hs.screen.primaryScreen(),
-        mainScreen = hs.screen.mainScreen()
-    })
-    hs.timer.doAfter(1, function()
-        adjustAllWindows()
-    end)
-end)
+-- addWakeWatcher(function()
+--     logAction("wake watcher called; adjusting windows", {
+--         primaryScreen = hs.screen.primaryScreen(),
+--         mainScreen = hs.screen.mainScreen()
+--     })
+--     hs.timer.doAfter(1, function()
+--         adjustAllWindows()
+--     end)
+-- end)
 
 initWindowStates()
 

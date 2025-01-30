@@ -12,8 +12,14 @@ function logToFile(message, filename)
     end
 
     if logFile then
-        local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-        logFile:write(string.format("[%s] %s\n", timestamp, message))
+        local month = os.date("%m"):gsub("^0", "")
+        local day = os.date("%d"):gsub("^0", "")
+        local hour = os.date("%I"):gsub("^0", "")
+        local min = os.date("%M")
+        local sec = os.date("%S")
+        local ampm = os.date("%p"):lower()
+        local timestamp = string.format("[%s/%s %s:%s:%s%s]", month, day, hour, min, sec, ampm)
+        logFile:write(string.format("%s %s\n", timestamp, message))
         logFile:close()
     end
 end
