@@ -31,6 +31,9 @@ BLACKLIST_RULES = {{
 }, {
     -- Google auth window
     window = "Sign in - Google Accounts"
+}, {
+    -- PayPal payment window
+    window = "PayPal"
 }}
 
 -- Function to check if a window is blacklisted
