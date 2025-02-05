@@ -34,6 +34,9 @@ BLACKLIST_RULES = {{
 }, {
     -- PayPal payment window
     window = "PayPal"
+}, {
+    -- Sometimes auth windows don't have titles right away / are "about:blank" (e.g. PayPal)
+    window = "about:blank"
 }}
 
 -- Function to check if a window is blacklisted
