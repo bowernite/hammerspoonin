@@ -38,8 +38,8 @@ function showWarning(timeRemaining)
     end
 end
 
-local warningTimers = {}
-local restartTimer = nil
+NIGHT_BLOCKING_WARNING_TIMERS = {}
+NIGHT_BLOCKING_RESTART_TIMER = nil
 
 local function scheduleRestart()
     log("Scheduling restart")
@@ -52,17 +52,18 @@ local function scheduleRestart()
     local hour, minute = restartTime:match("(%d+):(%d+)")
     for _, warningTime in ipairs(warningTimes) do
         log("Scheduling warning for " .. warningTime .. " minutes before restart")
-        warningTimers[warningTime] = hs.timer.doAt(hour .. ":" .. string.format("%02d", tonumber(minute) - warningTime),
-            function()
-                -- if not isScreenLocked() then
-                logAction("Screen is not locked, sending notification")
-                showWarning(warningTime)
-                -- end
-            end)
+        NIGHT_BLOCKING_WARNING_TIMERS[warningTime] = hs.timer.doAt(hour .. ":" ..
+                                                                       string.format("%02d",
+                tonumber(minute) - warningTime), function()
+            -- if not isScreenLocked() then
+            logAction("Screen is not locked, sending notification")
+            showWarning(warningTime)
+            -- end
+        end)
     end
 
     -- Schedule restart
-    restartTimer = hs.timer.doAt(restartTime, function()
+    NIGHT_BLOCKING_RESTART_TIMER = hs.timer.doAt(restartTime, function()
         log("Nightly restart fired, checking if screen is locked")
         -- if not isScreenLocked() then
         log("Screen is not locked...")

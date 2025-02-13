@@ -79,7 +79,7 @@ handleFluxState()
 restartVividIfNotNighttime()
 
 -- Check Flux status every minute to ensure it's running or killed as per the schedule
-fluxTimer = hs.timer.doEvery(600, handleFluxState)
+FLUX_CHECK_TIMER = hs.timer.doEvery(600, handleFluxState)
 addWakeWatcher(handleFluxState)
 
 local function maxOutBrightness()
