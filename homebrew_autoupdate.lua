@@ -82,8 +82,9 @@ end
 
 -- Run every hour (3600 seconds)
 local ONE_HOUR_IN_SECONDS = 60 * 60
-local timer = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew)
-timer:start()
+-- NOTE: Create a timer on the global scope so that it's not garbage collected. Ensure the name is unique, to avoid conflicts.
+HOMEBREW_AUTOUPDATE_TIMER = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew)
+HOMEBREW_AUTOUPDATE_TIMER:start()
 
 -- While testing, run it immediately
 -- updateHomebrew()
