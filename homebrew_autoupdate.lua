@@ -14,7 +14,7 @@ local function runCommand(command)
 end
 
 local function executeBrewCommand(command, description)
-    hs.notify.show("Homebrew Update", "", description)
+    -- hs.notify.show("Homebrew Update", "", description)
     logToHomebrewLogfile("Running: " .. command)
 
     local output = runCommand(brewCommand .. " " .. command .. " 2>&1")
@@ -34,7 +34,7 @@ local function isCommandSuccessful(result)
 end
 
 local function updateHomebrew()
-    hs.notify.show("Homebrew Update", "", "Starting Homebrew updates")
+    -- hs.notify.show("Homebrew Update", "", "Starting Homebrew updates")
     logAction("Running Homebrew update and upgrade")
 
     -- Update
@@ -49,7 +49,7 @@ local function updateHomebrew()
     log("Homebrew update completed", {
         updateResult = updateResult
     })
-    hs.notify.show("Homebrew Update", "", "Update completed successfully")
+    -- hs.notify.show("Homebrew Update", "", "Update completed successfully")
 
     -- Upgrade formulae
     local upgradeResult = executeBrewCommand("upgrade", "Running brew upgrade...")
@@ -63,7 +63,7 @@ local function updateHomebrew()
     log("Homebrew formula upgrade completed", {
         upgradeResult = upgradeResult
     })
-    hs.notify.show("Homebrew Update", "", "Formula upgrades completed successfully")
+    -- hs.notify.show("Homebrew Update", "", "Formula upgrades completed successfully")
 
     -- Upgrade casks
     local caskResult = executeBrewCommand("upgrade --cask", "Running cask upgrades...")
@@ -77,7 +77,7 @@ local function updateHomebrew()
     log("Homebrew cask upgrade completed", {
         caskResult = caskResult
     })
-    hs.notify.show("Homebrew Update", "", "All updates completed successfully")
+    -- hs.notify.show("Homebrew Update", "", "All updates completed successfully")
 end
 
 -- Run every hour (3600 seconds)
