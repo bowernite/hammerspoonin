@@ -8,7 +8,7 @@ require("utils/log")
 
 -- List of input devices, in priority order
 -- Do *not* modify the names in this list / the apostrophes
-local preferredInputDevices = {"C922 Pro Stream Webcam", "Brett’s AirPods", "Brett’s AirPods Pro",
+local preferredInputDevices = {"C922 Pro Stream Webcam", "Insta360 Link 2", "Brett's AirPods", "Brett's AirPods Pro",
                                "Brett’s AirPods Pro", "Brett’s AirPods"}
 
 local function setInputDevice(dev)
