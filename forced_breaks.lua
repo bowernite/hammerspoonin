@@ -2,7 +2,7 @@ require("utils/caffeinate")
 require("utils/log")
 
 local timerScriptPath = "~/src/personal/dotfiles/macos/swiftbar-plugins/countdown_timer.1s.rb"
-local timerArgs = "25m,5m Default Wake Timer"
+local timerArgs = "25m,5m"
 
 function startDefaultCountdownTimer()
     logAction("Executing countdown timer script after wake")
@@ -26,4 +26,4 @@ end
 
 addWakeWatcher(startDefaultCountdownTimer)
 
-startDefaultCountdownTimer()
+-- startDefaultCountdownTimer()
