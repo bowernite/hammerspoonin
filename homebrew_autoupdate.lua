@@ -1,13 +1,9 @@
 require("utils/log")
 require("private")
-require("utils/log_to_file")
+require("utils/log")
 
 local brewCommand = "/opt/homebrew/bin/brew"
 local sudoPassword = getSudoPassword()
-
-local function logToHomebrewLogfile(message)
-    logToFile(message, "homebrew_updates.log")
-end
 
 local function runCommand(command)
     return io.popen(command)
@@ -15,13 +11,13 @@ end
 
 local function executeBrewCommand(command, description)
     -- hs.notify.show("Homebrew Update", "", description)
-    logToHomebrewLogfile("Running: " .. command)
+    log("Running: " .. command)
 
     local output = runCommand(brewCommand .. " " .. command .. " 2>&1")
     local result = output:read("*all")
     output:close()
 
-    logToHomebrewLogfile("Output:\n" .. result)
+    log("Output:\n" .. result)
     return result
 end
 

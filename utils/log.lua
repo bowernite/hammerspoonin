@@ -175,6 +175,9 @@ function log(message, details, styleOptions, level)
     end
 
     logToFile(fileMessage, "hammerspoon.log")
+    local basename = filename:gsub("%.%w+$", "")
+    local logFilename = basename .. ".log"
+    logToFile(fileMessage, logFilename)
 
     for _, rule in ipairs(BLACKLIST_RULES) do
         if rule.filename == filename and stackLevel <= 2 then
