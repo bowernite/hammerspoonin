@@ -30,6 +30,7 @@ require("homebrew_autoupdate")
 -- Without this, it's just... stupid. On the other hand, when it's on it's still not bulletproof. Still going back and forth... As of now, it does still work sometimes, so it's not nothing
 require("windows/window_management")
 require("audio_devices")
+require("forced_breaks")
 
 ------------------------------------------------
 -- Annoying things to be enabled while developing
