@@ -2,9 +2,9 @@ require("utils/caffeinate")
 require("utils/log")
 
 local timerScriptPath = "~/src/personal/dotfiles/macos/swiftbar-plugins/countdown_timer.1s.rb"
-local timerArgs = "25m,3m"
+local defaultTimerArgs = "25m,3m"
 
-function startDefaultCountdownTimer()
+function startCountdownTimer(timerArgs)
     logAction("Executing countdown timer script after wake")
     local output, status, type, rc = hs.execute(timerScriptPath .. " " .. timerArgs, true)
     log("Executed countdown timer script", {
@@ -24,6 +24,13 @@ function startDefaultCountdownTimer()
     end
 end
 
-addWakeWatcher(startDefaultCountdownTimer)
+addWakeWatcher(function()
+    startCountdownTimer(defaultTimerArgs)
+end)
+
+addSleepWatcher(function()
+    -- On sleep, turn off the timer, so that we don't get locked out later when we try to unlock
+    startCountdownTimer("-1")
+end)
 
 -- startDefaultCountdownTimer()
