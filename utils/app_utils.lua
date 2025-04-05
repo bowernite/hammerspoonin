@@ -73,7 +73,7 @@ function killAppsInDock(additionalAppsToNotKill)
     local appNamesInDock = hs.fnutils.map(appsInDock, function(app)
         return app:name()
     end)
-    logAction("Killing the following apps in dock: " .. table.concat(appNamesInDock, ", "))
+    log("Checking apps in dock, to see which ones we need to kill. Apps in dock: " .. table.concat(appNamesInDock, ", "))
     for _, app in ipairs(appsInDock) do
         local appName = app:name()
         if not hs.fnutils.contains(appsToNotKill, appName) then
