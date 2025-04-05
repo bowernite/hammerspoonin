@@ -62,7 +62,8 @@ local function updateHomebrew()
     -- hs.notify.show("Homebrew Update", "", "Formula upgrades completed successfully")
 
     -- Upgrade casks
-    local caskResult = executeBrewCommand("upgrade --cask", "Running cask upgrades...")
+    -- --greedy lets us update casks that have some flag that says "I'll update myself"
+    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...")
     if not isCommandSuccessful(caskResult) then
         logError("Homebrew cask upgrade failed", {
             caskResult = caskResult
