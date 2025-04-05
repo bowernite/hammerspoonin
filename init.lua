@@ -35,8 +35,8 @@ require("forced_breaks")
 ------------------------------------------------
 -- Annoying things to be enabled while developing
 ------------------------------------------------
+require("reset_apps")
 -- Do I really need this? It's good in theory, but it _is_ complicating my life
--- require("reset_apps")
 -- resetAppsEveryMorning()
 -- require("boot")
 -- defaultAppState()

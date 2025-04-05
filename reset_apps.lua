@@ -8,10 +8,6 @@ local function resetApps()
 
     killInessentialApps()
 
-    hs.timer.doAfter(2, function()
-        defaultAppState()
-    end)
-
     closeAllFinderWindows()
 
     hs.alert.show("Reset apps")
@@ -23,6 +19,11 @@ function resetAppsEveryMorning()
         hs.alert.show("Doing morning reset...", 10)
         hs.notify.show("Doing morning reset...", "Resetting apps", "")
         resetApps()
+
+        hs.timer.doAfter(2, function()
+            defaultAppState()
+        end)
+
         log("Reset apps complete; returning true")
         return true
     end
@@ -34,6 +35,6 @@ function resetAppsEveryMorning()
     end)
 end
 
-hs.hotkey.bind({"cmd", "alt"}, "K", function()
+hs.hotkey.bind({"cmd", "alt"}, "k", function()
     resetApps()
 end)
