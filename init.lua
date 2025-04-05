@@ -19,18 +19,19 @@ hs.ipc.cliInstall()
 -- end)
 
 require("screen_color_and_brightness")
+require("homebrew_autoupdate")
 -- Cold Turkey is fine for now
 -- require("night_blocking")
-
----------------------------
--- WIP / not sure about yet
-------------------------------------------------
-require("homebrew_autoupdate")
 -- New finder windows annoying
 -- Without this, it's just... stupid. On the other hand, when it's on it's still not bulletproof. Still going back and forth... As of now, it does still work sometimes, so it's not nothing
 require("windows/window_management")
 require("audio_devices")
+
+---------------------------
+-- WIP / not sure about yet
+------------------------------------------------
 require("forced_breaks")
+require("hammerspoon_console_auto_dark_mode")
 
 ------------------------------------------------
 -- Annoying things to be enabled while developing
