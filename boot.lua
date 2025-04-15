@@ -8,7 +8,7 @@ if not status then
 end
 
 local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
-                       "Google Chrome", "Notion", "Trello", "Hammerspoon"}
+                       "Google Chrome", "Notion", "Trello", "Hammerspoon", "Arc"}
 
 function killInessentialApps()
     logAction("Killing inessential apps")
