@@ -37,6 +37,7 @@ require("hammerspoon_console_auto_dark_mode")
 -- Annoying things to be enabled while developing
 ------------------------------------------------
 require("reset_apps")
+require("daily_restart")
 -- Do I really need this? It's good in theory, but it _is_ complicating my life
 -- resetAppsEveryMorning()
 -- require("boot")
