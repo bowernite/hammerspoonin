@@ -9,11 +9,17 @@ local function runCommand(command)
     return io.popen(command)
 end
 
-local function executeBrewCommand(command, description)
+local function executeBrewCommand(command, description, useSudo)
     -- hs.notify.show("Homebrew Update", "", description)
     log("Running: " .. command)
 
-    local output = runCommand(brewCommand .. " " .. command .. " 2>&1")
+    local fullCommand = brewCommand .. " " .. command .. " 2>&1"
+    if useSudo then
+        -- Prepend sudo password for operations requiring sudo
+        fullCommand = "echo '" .. sudoPassword .. "' | " .. fullCommand
+    end
+
+    local output = runCommand(fullCommand)
     local result = output:read("*all")
     output:close()
 
@@ -63,7 +69,7 @@ local function updateHomebrew()
 
     -- Upgrade casks
     -- --greedy lets us update casks that have some flag that says "I'll update myself"
-    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...")
+    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...", true)
     if not isCommandSuccessful(caskResult) then
         logError("Homebrew cask upgrade failed", {
             caskResult = caskResult
@@ -84,4 +90,4 @@ HOMEBREW_AUTOUPDATE_TIMER = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew
 HOMEBREW_AUTOUPDATE_TIMER:start()
 
 -- While testing, run it immediately
--- updateHomebrew()
+updateHomebrew()
