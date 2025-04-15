@@ -90,4 +90,4 @@ HOMEBREW_AUTOUPDATE_TIMER = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew
 HOMEBREW_AUTOUPDATE_TIMER:start()
 
 -- While testing, run it immediately
-updateHomebrew()
+-- updateHomebrew()
