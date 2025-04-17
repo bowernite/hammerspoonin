@@ -3,22 +3,24 @@ require("private")
 require("utils/log")
 
 local brewCommand = "/opt/homebrew/bin/brew"
-local sudoPassword = getSudoPassword()
+local askpassPath = os.getenv("HOME") .. "/src/personal/hammerspoon/askpass.sh"
 
 local function runCommand(command)
     return io.popen(command)
 end
 
-local function executeBrewCommand(command, description, useSudo)
-    -- hs.notify.show("Homebrew Update", "", description)
+local function executeBrewCommand(command, description, env)
     log("Running: " .. command)
 
-    local fullCommand = brewCommand .. " " .. command .. " 2>&1"
-    if useSudo then
-        -- Prepend sudo password for operations requiring sudo
-        fullCommand = "echo '" .. sudoPassword .. "' | " .. fullCommand
+    local envPrefix = ""
+    if env then
+        for key, value in pairs(env) do
+            envPrefix = envPrefix .. key .. "=" .. value .. " "
+        end
     end
 
+    local fullCommand = envPrefix .. brewCommand .. " " .. command .. " 2>&1"
+    
     local output = runCommand(fullCommand)
     local result = output:read("*all")
     output:close()
@@ -36,7 +38,6 @@ local function isCommandSuccessful(result)
 end
 
 local function updateHomebrew()
-    -- hs.notify.show("Homebrew Update", "", "Starting Homebrew updates")
     logAction("Running Homebrew update and upgrade")
 
     -- Update
@@ -51,7 +52,6 @@ local function updateHomebrew()
     log("Homebrew update completed", {
         updateResult = updateResult
     })
-    -- hs.notify.show("Homebrew Update", "", "Update completed successfully")
 
     -- Upgrade formulae
     local upgradeResult = executeBrewCommand("upgrade", "Running brew upgrade...")
@@ -65,22 +65,35 @@ local function updateHomebrew()
     log("Homebrew formula upgrade completed", {
         upgradeResult = upgradeResult
     })
-    -- hs.notify.show("Homebrew Update", "", "Formula upgrades completed successfully")
 
-    -- Upgrade casks
+    -- Upgrade casks without sudo for brew itself
     -- --greedy lets us update casks that have some flag that says "I'll update myself"
-    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...", true)
+    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...", {
+        SUDO_ASKPASS = askpassPath
+    })
     if not isCommandSuccessful(caskResult) then
         logError("Homebrew cask upgrade failed", {
             caskResult = caskResult
-        })
+        }, caskResult)
         return
     end
 
     log("Homebrew cask upgrade completed", {
         caskResult = caskResult
     })
-    -- hs.notify.show("Homebrew Update", "", "All updates completed successfully")
+    
+    -- Cleanup after updates
+    local cleanupResult = executeBrewCommand("cleanup", "Cleaning up...")
+    if not isCommandSuccessful(cleanupResult) then
+        logError("Homebrew cleanup failed", {
+            cleanupResult = cleanupResult
+        }, cleanupResult)
+        return
+    end
+    
+    log("Homebrew cleanup completed", {
+        cleanupResult = cleanupResult
+    })
 end
 
 -- Run every hour (3600 seconds)
@@ -90,4 +103,4 @@ HOMEBREW_AUTOUPDATE_TIMER = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew
 HOMEBREW_AUTOUPDATE_TIMER:start()
 
 -- While testing, run it immediately
--- updateHomebrew()
+updateHomebrew()
