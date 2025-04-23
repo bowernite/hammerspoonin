@@ -176,7 +176,7 @@ function createDailyTask(resetTime, taskFunction, taskName)
             if result then
                 hasRunToday = true
                 log("Daily task ran successfully (" .. taskName .. ")")
-                hs.notify.show("Daily task ran successfully", taskName, "")
+                -- hs.notify.show("Daily task ran successfully", taskName, "")
             end
         end
     end
