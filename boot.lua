@@ -2,10 +2,39 @@ require("utils/app_utils")
 require("utils/log")
 
 -- General things we want to do when macOS boots
-local output, status = hs.execute("colima start --ssh-agent --dns 8.8.8.8", true)
-if not status then
-    hs.alert.show("Failed to start Colima: " .. output, 10)
+
+local network = require("utils/network")
+
+local function startColima()
+    local output, status = hs.execute("colima start --ssh-agent --dns 8.8.8.8", true)
+    if not status then
+        -- Check for the specific "vz driver is running but host agent is not" error
+        if output:match("vz driver is running but host agent is not") then
+            log("Detected Colima in inconsistent state, attempting to fix...")
+            -- Try to stop Colima first (force if needed) and then restart
+            hs.execute("colima stop --force", true)
+            -- Try starting again after force stop
+            output, status = hs.execute("colima start --ssh-agent --dns 8.8.8.8", true)
+            if not status then
+                logError("Failed to start Colima after recovery attempt", {
+                    output = output,
+                    status = status
+                }, output)
+            else
+                log("Successfully started Colima after recovery")
+            end
+        else
+            logError("Failed to start Colima", {
+                output = output,
+                status = status
+            }, output)
+        end
+    else
+        log("Successfully started Colima")
+    end
 end
+
+startColima()
 
 local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
                        "Google Chrome", "Notion", "Trello", "Hammerspoon", "Arc"}
