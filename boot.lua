@@ -4,7 +4,7 @@ require("utils/log")
 -- General things we want to do when macOS boots
 local output, status = hs.execute("colima start --ssh-agent --dns 8.8.8.8", true)
 if not status then
-    hs.alert.show("Failed to start Colima: " .. output)
+    hs.alert.show("Failed to start Colima: " .. output, 10)
 end
 
 local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",

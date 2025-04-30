@@ -1,6 +1,7 @@
 require("utils/log")
 require("private")
 require("utils/log")
+local network = require("utils/network")
 
 local brewCommand = "/opt/homebrew/bin/brew"
 local askpassPath = os.getenv("HOME") .. "/src/personal/hammerspoon/askpass.sh"
@@ -40,9 +41,18 @@ end
 local function updateHomebrew()
     logAction("Running Homebrew update and upgrade")
 
-    -- Update
+    if not network.hasInternetConnection() then
+        log("Skipping Homebrew updates - no internet connection")
+        return
+    end
+
     local updateResult = executeBrewCommand("update", "Running brew update...")
     if not isUpdateSuccessful(updateResult) then
+        if network.isConnectivityError(updateResult) then
+            log("Homebrew update skipped due to connectivity issues")
+            return
+        end
+        
         logError("Homebrew update failed", {
             updateResult = updateResult
         }, updateResult)
@@ -53,9 +63,13 @@ local function updateHomebrew()
         updateResult = updateResult
     })
 
-    -- Upgrade formulae
     local upgradeResult = executeBrewCommand("upgrade", "Running brew upgrade...")
     if not isCommandSuccessful(upgradeResult) then
+        if network.isConnectivityError(upgradeResult) then
+            log("Homebrew formula upgrade skipped due to connectivity issues")
+            return
+        end
+        
         logError("Homebrew formula upgrade failed", {
             upgradeResult = upgradeResult
         }, upgradeResult)
@@ -72,6 +86,11 @@ local function updateHomebrew()
         SUDO_ASKPASS = askpassPath
     })
     if not isCommandSuccessful(caskResult) then
+        if network.isConnectivityError(caskResult) then
+            log("Homebrew cask upgrade skipped due to connectivity issues")
+            return
+        end
+        
         logError("Homebrew cask upgrade failed", {
             caskResult = caskResult
         }, caskResult)
@@ -82,9 +101,13 @@ local function updateHomebrew()
         caskResult = caskResult
     })
     
-    -- Cleanup after updates
     local cleanupResult = executeBrewCommand("cleanup", "Cleaning up...")
     if not isCommandSuccessful(cleanupResult) then
+        if network.isConnectivityError(cleanupResult) then
+            log("Homebrew cleanup skipped due to connectivity issues")
+            return
+        end
+        
         logError("Homebrew cleanup failed", {
             cleanupResult = cleanupResult
         }, cleanupResult)
@@ -96,10 +119,10 @@ local function updateHomebrew()
     })
 end
 
--- Run every hour (3600 seconds)
-local ONE_HOUR_IN_SECONDS = 60 * 60
+-- Run every 24 hours (86400 seconds)
+local ONE_DAY_IN_SECONDS = 60 * 60 * 24
 -- NOTE: Create a timer on the global scope so that it's not garbage collected. Ensure the name is unique, to avoid conflicts.
-HOMEBREW_AUTOUPDATE_TIMER = hs.timer.doEvery(ONE_HOUR_IN_SECONDS, updateHomebrew)
+HOMEBREW_AUTOUPDATE_TIMER = hs.timer.doEvery(ONE_DAY_IN_SECONDS, updateHomebrew)
 HOMEBREW_AUTOUPDATE_TIMER:start()
 
 -- While testing, run it immediately
