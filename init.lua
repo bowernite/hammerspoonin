@@ -30,7 +30,7 @@ require("audio_devices")
 ---------------------------
 -- WIP / not sure about yet
 ------------------------------------------------
--- require("forced_breaks")
+require("forced_breaks")
 require("hammerspoon_console_auto_dark_mode")
 
 ------------------------------------------------

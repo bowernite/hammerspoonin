@@ -24,9 +24,9 @@ function startCountdownTimer(timerArgs)
     end
 end
 
-addWakeWatcher(function()
-    startCountdownTimer(defaultTimerArgs)
-end)
+-- addWakeWatcher(function()
+--     startCountdownTimer(defaultTimerArgs)
+-- end)
 
 addSleepWatcher(function()
     -- On sleep, turn off the timer, so that we don't get locked out later when we try to unlock
