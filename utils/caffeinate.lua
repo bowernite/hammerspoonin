@@ -66,3 +66,32 @@ end
 function addSleepWatcher(listener)
     table.insert(sleepListeners, listener)
 end
+
+-- Restart the system with different window reopening options
+function restartSystem(options)
+    options = options or {}
+    
+    if options.reopenWindows == false then
+        -- Restart without reopening windows
+        log("Restarting system without reopening windows")
+        
+        -- First set the preferences to not reopen windows
+        hs.execute([[defaults write com.apple.loginwindow TALLogoutSavesState -bool FALSE]])
+        hs.execute([[defaults write com.apple.loginwindow LoginwindowLaunchesRelaunchApps -bool FALSE]])
+        
+        -- Then execute the restart command in the background
+        hs.execute([[osascript -e 'tell application "System Events" to restart' &> /dev/null &]])
+    else
+        -- Standard restart with default behavior (will reopen windows)
+        log("Restarting system with default behavior (will reopen windows)")
+        
+        -- First set the preferences to reopen windows
+        hs.execute([[defaults write com.apple.loginwindow TALLogoutSavesState -bool TRUE]])
+        hs.execute([[defaults write com.apple.loginwindow LoginwindowLaunchesRelaunchApps -bool TRUE]])
+        
+        -- Then restart
+        hs.caffeinate.restartSystem()
+    end
+    
+    return true
+end

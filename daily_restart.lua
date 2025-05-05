@@ -133,7 +133,8 @@ local function restartComputer()
         -- Show alert and schedule restart
         hs.alert.show("Restarting computer for daily maintenance...", 5)
         hs.timer.doAfter(5, function()
-            hs.caffeinate.restartSystem()
+            -- Use our new restart utility with reopenWindows set to false
+            restartSystem({reopenWindows = false})
         end)
         return true
     else

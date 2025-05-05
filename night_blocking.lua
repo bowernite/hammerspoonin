@@ -74,7 +74,7 @@ local function scheduleRestart()
 
         logAction(
             "Brett has been a bad boy... Restarting his computer to keep him honest and keep that melatonin highhhhhh")
-        hs.caffeinate.restartSystem()
+        restartSystem({reopenWindows = false})
         -- end
     end)
 end

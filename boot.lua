@@ -207,7 +207,7 @@ if isActualSystemBoot() then
     startColima()
     
     -- Show alert and schedule hiding all windows after delay
-    local HIDE_WINDOWS_DELAY = 10 -- seconds to wait before hiding windows
+    local HIDE_WINDOWS_DELAY = 0 -- seconds to wait before hiding windows
     hs.alert.show("System booted - windows will be hidden in " .. HIDE_WINDOWS_DELAY .. " seconds", HIDE_WINDOWS_DELAY)
     
     -- Schedule hiding all windows after delay
