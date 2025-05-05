@@ -122,7 +122,7 @@ local function restartComputer()
     end
     
     -- Only restart if within specified time window (4am to 12pm)
-    if isWithinTimeWindow("4:00AM", "12:00PM") then
+    if isWithinTimeWindow("4:00AM", "10:00PM") then
         logAction("Daily restart initiated - restarting computer")
         
         -- Record the restart before actually restarting
