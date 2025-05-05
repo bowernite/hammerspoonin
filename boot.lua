@@ -5,6 +5,82 @@ require("utils/log")
 
 local network = require("utils/network")
 
+-- Set up persistence for tracking actual system boots
+local BOOT_STATE_KEY = "last_system_boot_time"
+local UPTIME_THRESHOLD = 300 -- 5 minutes in seconds
+
+-- Function to determine if this is an actual system boot or just a Hammerspoon restart
+local function isActualSystemBoot()
+    -- Get the real system uptime in seconds using the system uptime command
+    local uptimeOutput, status = hs.execute("uptime")
+    local systemUptimeSeconds = 0
+    
+    if status then
+        log("Uptime output: " .. uptimeOutput)
+        
+        -- macOS uptime format is typically: " HH:MM:SS  up   H:MM,  N users,  load average: X.XX, Y.YY, Z.ZZ"
+        -- or for longer times: " HH:MM:SS  up N days,  H:MM,  N users,  load average: X.XX, Y.YY, Z.ZZ"
+        
+        -- Extract the uptime portion
+        local upPart = uptimeOutput:match("up%s+(.-),%s+%d+%s+users")
+        if upPart then
+            log("Uptime part: " .. upPart)
+            
+            -- Handle days if present
+            local days = upPart:match("(%d+)%s+days?")
+            local timeStr = upPart:match("(%d+:%d+)$")
+            
+            local hours, minutes = 0, 0
+            if timeStr then
+                hours, minutes = timeStr:match("(%d+):(%d+)")
+            end
+            
+            -- Convert all to seconds
+            systemUptimeSeconds = (days and tonumber(days) * 86400 or 0) + 
+                                 (hours and tonumber(hours) * 3600 or 0) + 
+                                 (minutes and tonumber(minutes) * 60 or 0)
+            
+            log("Parsed uptime: " .. tostring(systemUptimeSeconds) .. " seconds", {
+                days = days,
+                hours = hours,
+                minutes = minutes,
+                timeStr = timeStr
+            })
+        else
+            log("Failed to parse uptime output")
+        end
+    end
+    
+    -- Get the last recorded boot time from settings
+    local lastBootTime = hs.settings.get(BOOT_STATE_KEY)
+    local currentTime = os.time()
+    
+    -- Consider this a system boot if:
+    -- 1. System uptime is low (less than threshold), indicating recent boot
+    -- 2. AND either we don't have a previous boot time or the current time minus uptime
+    --    is significantly different from the last boot time
+    if systemUptimeSeconds < UPTIME_THRESHOLD then
+        local estimatedBootTime = currentTime - systemUptimeSeconds
+        
+        -- If we don't have a last boot time or the boot times are different (allowing for some margin)
+        if not lastBootTime or math.abs(estimatedBootTime - lastBootTime) > 60 then
+            -- Save the estimated boot time
+            hs.settings.set(BOOT_STATE_KEY, estimatedBootTime)
+            log("Detected actual system boot", {
+                systemUptime = systemUptimeSeconds,
+                estimatedBootTime = os.date("%Y-%m-%d %H:%M:%S", estimatedBootTime)
+            })
+            return true
+        end
+    end
+    
+    log("Not an actual system boot, just a Hammerspoon restart/reload", {
+        systemUptime = systemUptimeSeconds,
+        lastBootTime = lastBootTime and os.date("%Y-%m-%d %H:%M:%S", lastBootTime) or "none"
+    })
+    return false
+end
+
 local function startColima()
     local output, status = hs.execute("colima start --ssh-agent --dns 8.8.8.8", true)
     if not status then
@@ -33,8 +109,6 @@ local function startColima()
         log("Successfully started Colima")
     end
 end
-
-startColima()
 
 local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
                        "Google Chrome", "Notion", "Trello", "Hammerspoon", "Arc"}
@@ -84,8 +158,9 @@ function minimizeCursorWindows()
         local iterations = 0
 
         local timer
-        poll(function()
+        timer = hs.timer.doEvery(2, function()
             log("Minimizing cursor windows check")
+            iterations = iterations + 1
             if not minimizeExecuted and hs.application.get("Cursor") then
                 logAction("Minimizing cursor windows")
                 local cursorApp = hs.application.get("Cursor")
@@ -96,12 +171,14 @@ function minimizeCursorWindows()
                     end
                 end
                 minimizeExecuted = true
-                return true -- Stop polling
+                timer:stop()
+                return
             end
-            return false -- Continue polling
-        end, 2, 30)
-
-        timer:start()
+            
+            if iterations >= 30 or minimizeExecuted then
+                timer:stop()
+            end
+        end)
     end
 end
 
@@ -119,4 +196,27 @@ function defaultAppState()
     hs.timer.doAfter(10, function()
         hideAllApps()
     end)
+end
+
+-- Store the time Hammerspoon was last reloaded
+hs.settings.set("hs_last_reload", hs.timer.secondsSinceEpoch())
+
+-- Only run boot startup sequence if this is an actual system boot
+if isActualSystemBoot() then
+    logAction("Running boot startup sequence")
+    startColima()
+    
+    -- Show alert and schedule hiding all windows after delay
+    local HIDE_WINDOWS_DELAY = 10 -- seconds to wait before hiding windows
+    hs.alert.show("System booted - windows will be hidden in " .. HIDE_WINDOWS_DELAY .. " seconds", HIDE_WINDOWS_DELAY)
+    
+    -- Schedule hiding all windows after delay
+    log("Scheduling hideAllApps in " .. HIDE_WINDOWS_DELAY .. " seconds")
+    HIDE_WINDOWS_ON_BOOT_TIMER = hs.timer.doAfter(HIDE_WINDOWS_DELAY, function()
+        logAction(HIDE_WINDOWS_DELAY .. " seconds elapsed after boot - hiding all windows")
+        hs.alert.show("Hiding all windows now...", 3)
+        hideAllApps()
+    end)
+else
+    log("Skipping boot sequence - not an actual system boot")
 end

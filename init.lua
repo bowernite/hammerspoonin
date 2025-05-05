@@ -40,7 +40,7 @@ require("reset_apps")
 require("daily_restart")
 -- Do I really need this? It's good in theory, but it _is_ complicating my life
 -- resetAppsEveryMorning()
--- require("boot")
+require("boot")
 -- defaultAppState()
 -- require("morning_space")
 
