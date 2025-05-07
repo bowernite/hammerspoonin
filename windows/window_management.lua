@@ -3,6 +3,7 @@ require("windows/window_utils")
 require("windows/default_window_sizes")
 require("windows/window_blacklist")
 require("utils/caffeinate")
+require("boot")
 
 windowScreenMap = {}
 centeredWindows = {}
@@ -20,22 +21,35 @@ end
 
 -- Function to update window screen map, screen dimensions, centered and maximized windows
 local function initWindowStates()
-    log("Initializing window states")
     local allWindows = hs.window.allWindows()
+    local isBoot = wasRecentSystemBoot()
+    log("Initializing window states", {
+        isBoot = isBoot
+    })
+    if isBoot then
+        hs.timer.doAfter(10, function()
+            hs.alert.show("Setting default window size in 10 seconds")
+        end)
+    end
     for _, window in ipairs(allWindows) do
-        if not isWindowBlacklisted(window) then
-            -- Not sure why we were doing this, but experimenting with turning it off to reduce load on load
-            -- Maybe for on boot?
-            -- setDefaultWindowSize(window)
-
-            updateWindowScreenMap(window)
-
-            -- Update centered windows
-            centeredWindows[window:id()] = isWindowCentered(window)
-
-            -- Update maximized windows
-            maximizedWindows[window:id()] = isWindowMaximized(window)
+        if isWindowBlacklisted(window) then goto continue end
+        
+        if isBoot then
+            log("Is boot; setting default window size in 10 seconds")
+            hs.timer.doAfter(10, function()
+                setDefaultWindowSize(window)
+            end)
         end
+        
+        updateWindowScreenMap(window)
+        
+        -- Update centered windows
+        centeredWindows[window:id()] = isWindowCentered(window)
+        
+        -- Update maximized windows
+        maximizedWindows[window:id()] = isWindowMaximized(window)
+        
+        ::continue::
     end
 end
 

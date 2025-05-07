@@ -9,8 +9,17 @@ local network = require("utils/network")
 local BOOT_STATE_KEY = "last_system_boot_time"
 local UPTIME_THRESHOLD = 300 -- 5 minutes in seconds
 
+-- Function for other modules to check if system booted recently
+function wasRecentSystemBoot(timeWindowSeconds)
+    local lastBootTime = hs.settings.get(BOOT_STATE_KEY)
+    if not lastBootTime then return false end
+    
+    timeWindowSeconds = timeWindowSeconds or 150 -- Default 2.5 minutes
+    return (os.time() - lastBootTime) < timeWindowSeconds
+end
+
 -- Function to determine if this is an actual system boot or just a Hammerspoon restart
-local function isActualSystemBoot()
+function isActualSystemBoot()
     -- Get the real system uptime in seconds using the system uptime command
     local uptimeOutput, status = hs.execute("uptime")
     local systemUptimeSeconds = 0
