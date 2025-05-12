@@ -2,3 +2,5 @@
 logs/*
 persistence/*
 askpass.sh
+
+work/**

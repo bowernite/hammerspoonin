@@ -32,6 +32,7 @@ require("audio_devices")
 ------------------------------------------------
 require("forced_breaks")
 require("hammerspoon_console_auto_dark_mode")
+require("work/work")
 
 ------------------------------------------------
 -- Annoying things to be enabled while developing

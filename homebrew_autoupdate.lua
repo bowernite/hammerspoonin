@@ -63,7 +63,7 @@ local function updateHomebrew()
         updateResult = updateResult
     })
 
-    local upgradeResult = executeBrewCommand("upgrade", "Running brew upgrade...")
+    local upgradeResult = executeBrewCommand("upgrade --greedy", "Running brew upgrade...")
     if not isCommandSuccessful(upgradeResult) then
         if network.isConnectivityError(upgradeResult) then
             log("Homebrew formula upgrade skipped due to connectivity issues")
