@@ -27,28 +27,26 @@ local function initWindowStates()
         isBoot = isBoot
     })
     if isBoot then
-        hs.timer.doAfter(10, function()
-            hs.alert.show("Setting default window size in 10 seconds")
-        end)
+        hs.alert.show("Setting default window size")
     end
     for _, window in ipairs(allWindows) do
-        if isWindowBlacklisted(window) then goto continue end
-        
-        if isBoot then
-            log("Is boot; setting default window size in 10 seconds")
-            hs.timer.doAfter(10, function()
-                setDefaultWindowSize(window)
-            end)
+        if isWindowBlacklisted(window) then
+            goto continue
         end
-        
+
+        if isBoot then
+            log("Is boot; setting default window size")
+            setDefaultWindowSize(window)
+        end
+
         updateWindowScreenMap(window)
-        
+
         -- Update centered windows
         centeredWindows[window:id()] = isWindowCentered(window)
-        
+
         -- Update maximized windows
         maximizedWindows[window:id()] = isWindowMaximized(window)
-        
+
         ::continue::
     end
 end
