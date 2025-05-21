@@ -1,5 +1,4 @@
 require("utils/log")
-require("private")
 require("utils/log")
 local network = require("utils/network")
 
