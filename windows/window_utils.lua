@@ -92,6 +92,9 @@ function isMaximized(window)
                (window:frame().w == window:screen():frame().w and window:frame().h == window:screen():frame().h)
 end
 
+-- Initialize global timer storage to prevent garbage collection
+_G.windowMaximizeTimers = _G.windowMaximizeTimers or {}
+
 -- Maximizes the given window. Returns true if the window was maximized, false if it was not.
 function maximizeWindow(window)
     if isMaximized(window) then
@@ -110,12 +113,16 @@ function maximizeWindow(window)
     maximizeWindowManually(window)
 
     local delay = 0.3
-    hs.timer.doAfter(delay, function()
+    local firstRetryCallback = function()
         maximizeWindowManually(window)
-        hs.timer.doAfter(delay, function()
+        local secondRetryCallback = function()
             maximizeWindowManually(window)
-        end)
-    end)
+        end
+        local secondTimer = hs.timer.doAfter(delay, secondRetryCallback)
+        table.insert(_G.windowMaximizeTimers, secondTimer)
+    end
+    local firstTimer = hs.timer.doAfter(delay, firstRetryCallback)
+    table.insert(_G.windowMaximizeTimers, firstTimer)
 
     maximizedWindows[window:id()] = true
 

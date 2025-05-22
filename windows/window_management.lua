@@ -113,29 +113,41 @@ end
 
 -- https://www.hammerspoon.org/docs/hs.window.filter.html
 windowWatcher = hs.window.filter.new(nil)
+
+-- Store callback functions in global variables to prevent garbage collection
+windowCreatedCallback = function(window)
+    handleWindowEvent(window, "created")
+end
+
+windowFocusedCallback = function(window)
+    handleWindowEvent(window, "focused")
+end
+
 -- NOTES:
 -- - created, visible, and onScreen -- none of them solve the Chrome issue, where there is no open window and we open a bookmark via Alfred
-windowWatcher:subscribe(hs.window.filter.windowCreated, function(window)
-    handleWindowEvent(window, "created")
-end)
--- windowWatcher:subscribe(hs.window.filter.windowMoved, function(window)
---     handleWindowEvent(window, "moved")
--- end)
+windowWatcher:subscribe(hs.window.filter.windowCreated, windowCreatedCallback)
+windowMovedCallback = function(window)
+    handleWindowEvent(window, "moved")
+end
+
+windowOnScreenCallback = function(window)
+    handleWindowEvent(window, "onScreen")
+end
+
+windowVisibleCallback = function(window)
+    handleWindowEvent(window, "visible")
+end
+
+-- windowWatcher:subscribe(hs.window.filter.windowMoved, windowMovedCallback)
 -- 1/27/25: Chrome: opening a bookmark via Alfred doesn't trigger a `created` event, so we need to use `focused`, or `onScreen`, or `visible`
-windowWatcher:subscribe(hs.window.filter.windowFocused, function(window)
-    handleWindowEvent(window, "focused")
-end)
+windowWatcher:subscribe(hs.window.filter.windowFocused, windowFocusedCallback)
 -- 9/4/24: Trying to fix bug where focus event doesn't fire on first focus (but does fire on subsequent focus)
 -- TODO: Remove / isolate these if it's fixed, or remove if the wake watcher handles this
 -- windowOnScreen fires only when a window becomes physically visible on the current screen,
 -- while windowVisible fires for any window that becomes "visible" across all spaces/screens.
 -- Guess: Since we don't use Mission Control spaces, windowOnScreen is more precise and efficient.
--- windowWatcher:subscribe(hs.window.filter.windowOnScreen, function(window)
---     handleWindowEvent(window, "onScreen")
--- end)
--- windowWatcher:subscribe(hs.window.filter.windowVisible, function(window)
---     handleWindowEvent(window, "visible")
--- end)
+-- windowWatcher:subscribe(hs.window.filter.windowOnScreen, windowOnScreenCallback)
+-- windowWatcher:subscribe(hs.window.filter.windowVisible, windowVisibleCallback)
 
 function adjustAllWindows()
     local allWindows = hs.window.allWindows()
@@ -144,29 +156,41 @@ function adjustAllWindows()
     end
 end
 
+-- Initialize global timer storage to prevent garbage collection
+_G.windowManagementTimers = _G.windowManagementTimers or {}
+
+-- Store callback functions to prevent garbage collection
+screenWatcherCallback = function()
+    log("newWithActiveScreen watcher called; adjusting windows", {
+        primaryScreen = hs.screen.primaryScreen(),
+        mainScreen = hs.screen.mainScreen()
+    })
+    local delayedAdjustCallback = function()
+        logAction("Adjusting windows after 4 second delay (newWithActiveScreen watcher)")
+        adjustAllWindows()
+    end
+    local timer = hs.timer.doAfter(4, delayedAdjustCallback)
+    table.insert(_G.windowManagementTimers, timer)
+end
+
+wakeWatcherCallback = function()
+    logAction("wake watcher called; adjusting windows", {
+        primaryScreen = hs.screen.primaryScreen(),
+        mainScreen = hs.screen.mainScreen()
+    })
+    local delayedAdjustCallback = function()
+        adjustAllWindows()
+    end
+    local timer = hs.timer.doAfter(1, delayedAdjustCallback)
+    table.insert(_G.windowManagementTimers, timer)
+end
+
 -- "Creates a new screen-watcher that is also called when the active screen changes." (in addition to "when a change in the screen layout occurs")
 -- https://www.hammerspoon.org/docs/hs.screen.watcher.html#newWithActiveScreen
 -- 1/27/25: Doesn't seem to work when: Built-in -> sleep for a while -> wake when lid is closed + external monitor is connected
--- hs.screen.watcher.newWithActiveScreen(function()
---     log("newWithActiveScreen watcher called; adjusting windows", {
---         primaryScreen = hs.screen.primaryScreen(),
---         mainScreen = hs.screen.mainScreen()
---     })
---     hs.timer.doAfter(4, function()
---         logAction("Adjusting windows after 8 second delay (newWithActiveScreen watcher)")
---         adjustAllWindows()
---     end)
--- end):start()
+-- screenWatcher = hs.screen.watcher.newWithActiveScreen(screenWatcherCallback):start()
 
--- addWakeWatcher(function()
---     logAction("wake watcher called; adjusting windows", {
---         primaryScreen = hs.screen.primaryScreen(),
---         mainScreen = hs.screen.mainScreen()
---     })
---     hs.timer.doAfter(1, function()
---         adjustAllWindows()
---     end)
--- end)
+-- addWakeWatcher(wakeWatcherCallback)
 
 initWindowStates()
 
