@@ -232,3 +232,4 @@ function logWarning(message, details)
         }
     }, 3)
 end
+

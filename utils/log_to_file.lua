@@ -1,3 +1,9 @@
+require("utils/log_cleanup")
+
+-- Cleanup counter to avoid running cleanup on every log call
+local cleanupCounter = 0
+local CLEANUP_INTERVAL = 50 -- Run cleanup every 50 log calls
+
 function logToFile(message, filename)
     -- Ensure logs directory exists
     os.execute("mkdir -p logs")
@@ -21,5 +27,12 @@ function logToFile(message, filename)
         local timestamp = string.format("[%s/%s %s:%s:%s%s]", month, day, hour, min, sec, ampm)
         logFile:write(string.format("%s %s\n", timestamp, message))
         logFile:close()
+    end
+
+    -- Periodically clean up old logs
+    cleanupCounter = cleanupCounter + 1
+    if cleanupCounter >= CLEANUP_INTERVAL then
+        cleanupCounter = 0
+        cleanupLogFile(filename)
     end
 end
