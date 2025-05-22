@@ -13,10 +13,22 @@ local function executeBrewCommand(command, description, env)
     log("Running: " .. command)
 
     local envPrefix = ""
+    -- Default environment variables for all brew commands
+    local defaultEnv = {
+        SUDO_ASKPASS = askpassPath,
+        HOMEBREW_NO_ENV_HINTS = "1"
+    }
+    
+    -- Merge default env with provided env
     if env then
         for key, value in pairs(env) do
-            envPrefix = envPrefix .. key .. "=" .. value .. " "
+            defaultEnv[key] = value
         end
+    end
+    
+    -- Build env prefix
+    for key, value in pairs(defaultEnv) do
+        envPrefix = envPrefix .. key .. "=" .. value .. " "
     end
 
     local fullCommand = envPrefix .. brewCommand .. " " .. command .. " 2>&1"
@@ -81,9 +93,7 @@ local function updateHomebrew()
 
     -- Upgrade casks without sudo for brew itself
     -- --greedy lets us update casks that have some flag that says "I'll update myself"
-    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...", {
-        SUDO_ASKPASS = askpassPath
-    })
+    local caskResult = executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...")
     if not isCommandSuccessful(caskResult) then
         if network.isConnectivityError(caskResult) then
             log("Homebrew cask upgrade skipped due to connectivity issues")
