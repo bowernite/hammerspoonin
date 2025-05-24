@@ -142,12 +142,13 @@ end
 -- 1/27/25: Chrome: opening a bookmark via Alfred doesn't trigger a `created` event, so we need to use `focused`, or `onScreen`, or `visible`
 windowWatcher:subscribe(hs.window.filter.windowFocused, windowFocusedCallback)
 -- 9/4/24: Trying to fix bug where focus event doesn't fire on first focus (but does fire on subsequent focus)
+-- 5/23/25: This actually seems to be necessary -- again, it's not firing on first focus
 -- TODO: Remove / isolate these if it's fixed, or remove if the wake watcher handles this
 -- windowOnScreen fires only when a window becomes physically visible on the current screen,
 -- while windowVisible fires for any window that becomes "visible" across all spaces/screens.
 -- Guess: Since we don't use Mission Control spaces, windowOnScreen is more precise and efficient.
 -- windowWatcher:subscribe(hs.window.filter.windowOnScreen, windowOnScreenCallback)
--- windowWatcher:subscribe(hs.window.filter.windowVisible, windowVisibleCallback)
+windowWatcher:subscribe(hs.window.filter.windowVisible, windowVisibleCallback)
 
 function adjustAllWindows()
     local allWindows = hs.window.allWindows()
