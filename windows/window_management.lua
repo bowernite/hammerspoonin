@@ -68,7 +68,6 @@ local function adjustWindowIfNecessary(window)
     local windowIsOnNewScreenOrInitialScreen = currentScreenID ~= oldScreenID
     if windowIsOnNewScreenOrInitialScreen then
         log("Window is on a new screen or initial screen")
-        local newScreen = hs.screen.find(currentScreenID)
 
         if maximizedWindows[windowID] then
             log("Was maximized on old screen; maximizing on new screen")
@@ -83,6 +82,19 @@ local function adjustWindowIfNecessary(window)
             log("Window moved screens; centering window", {window})
             centerWindow(window)
         end
+    end
+
+    -- Temporary workaround for Trello window with specific dimensions
+    local frame = window:frame()
+    -- if frame.w == 1728 and frame.h == 1079 and frame.x == 0 and frame.y == 361 then
+    -- if frame.w == 1728 and frame.h == 1079 and frame.x == 0 then
+    if frame.w == 1728 and frame.h == 1079 then
+        logAction("Window is dimensions of MacBook built-in screen (16\"); maximizing", {
+            window = window,
+            frame = frame
+        })
+        maximizeWindow(window)
+        return
     end
 
     -- Update the window's screen ID in the map and check if it's centered

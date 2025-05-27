@@ -35,6 +35,6 @@ function resetAppsEveryMorning()
     end)
 end
 
-hs.hotkey.bind({"cmd", "alt"}, "k", function()
+hs.hotkey.bind({"cmd", "alt"}, "r", function()
     resetApps()
 end)
