@@ -3,7 +3,7 @@ require("utils/log")
 require("boot")
 require("utils/utils")
 
-local function resetApps()
+function resetApps()
     log("Initiating app reset sequence")
 
     killInessentialApps()
@@ -35,6 +35,15 @@ function resetAppsEveryMorning()
     end)
 end
 
-hs.hotkey.bind({"cmd", "alt"}, "r", function()
-    resetApps()
-end)
+-- This doesn't work. Instead, use `hs -c "resetApps()"` from the command line.
+-- Register URL handler for resetting apps
+-- Usage:
+--   From command line: open "resetApps://"
+--   From Lua: hs.urlevent.openURL("resetApps://")
+-- hs.urlevent.bind("resetApps", function(eventName, params)
+--     log("Received resetApps URL event")
+--     resetApps()
+-- end)
+-- Register the URL scheme
+-- hs.urlevent.setDefaultHandler("resetApps")
+
