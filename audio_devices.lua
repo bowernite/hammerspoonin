@@ -8,7 +8,8 @@ require("utils/log")
 
 -- List of input devices, in priority order
 -- Do *not* modify the names in this list / the apostrophes
-local preferredInputDevices = {"C922 Pro Stream Webcam", "Brett's AirPods", "Brett's AirPods Pro",
+-- "Insta360 Link 2"
+local preferredInputDevices = {"Shure MV7+", "C922 Pro Stream Webcam", "Brett's AirPods", "Brett's AirPods Pro",
                                "Brett’s AirPods Pro", "Brett’s AirPods"}
 
 local function setInputDevice(dev)
@@ -29,7 +30,7 @@ local function useBuiltinIfInOffice()
     local builtInDevice = nil
 
     for _, dev in ipairs(audioDevices) do
-        if dev:name() == "C922 Pro Stream Webcam" then
+        if dev:name() == "C922 Pro Stream Webcam" or dev:name() == "Insta360 Link 2" then
             webcamConnected = true
         end
         if dev:transportType() == "Built-in" and dev:jackConnected() then

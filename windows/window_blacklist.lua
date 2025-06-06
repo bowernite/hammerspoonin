@@ -26,7 +26,6 @@ BLACKLIST_RULES = {{
 }, {
     app = "coreautha"
 }, {
-    app = "Google Chrome",
     window = "PayPal - Google Chrome - Brett"
 }, {
     -- Google auth window
