@@ -49,6 +49,10 @@ local function isCommandSuccessful(result)
     return result:match("Error:") == nil
 end
 
+local function isSudoPasswordFailure(result)
+    return result:match("Sorry, try again") ~= nil
+end
+
 local function updateHomebrew()
     logAction("Running Homebrew update and upgrade")
 
@@ -81,6 +85,13 @@ local function updateHomebrew()
             return
         end
         
+        if isSudoPasswordFailure(upgradeResult) then
+            logError("Homebrew upgrade failed due to incorrect sudo password", {
+                upgradeResult = upgradeResult
+            }, upgradeResult)
+            return
+        end
+        
         logError("Homebrew formula upgrade failed", {
             upgradeResult = upgradeResult
         }, upgradeResult)
@@ -97,6 +108,13 @@ local function updateHomebrew()
     if not isCommandSuccessful(caskResult) then
         if network.isConnectivityError(caskResult) then
             log("Homebrew cask upgrade skipped due to connectivity issues")
+            return
+        end
+        
+        if isSudoPasswordFailure(caskResult) then
+            logError("Homebrew cask upgrade failed due to incorrect sudo password", {
+                caskResult = caskResult
+            }, caskResult)
             return
         end
         
