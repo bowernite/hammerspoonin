@@ -9,8 +9,15 @@ require("utils/log")
 -- List of input devices, in priority order
 -- Do *not* modify the names in this list / the apostrophes
 -- "Insta360 Link 2"
-local preferredInputDevices = {"Shure MV7+", "C922 Pro Stream Webcam", "Brett's AirPods", "Brett's AirPods Pro",
-                               "Brett’s AirPods Pro", "Brett’s AirPods"}
+local preferredInputDevices = {
+    "Wave Link Stream", -- Elgato Wave:3 output (_after_ effects)
+    -- "Shure MV7+",
+    -- "C922 Pro Stream Webcam",
+    "Brett's AirPods",
+    "Brett's AirPods Pro",
+    "Brett's AirPods Pro",
+    "Brett's AirPods"
+}
 
 local function setInputDevice(dev)
     log("Ensuring input device is set to:", dev:name())
