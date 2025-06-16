@@ -10,6 +10,7 @@ require("utils/log")
 -- Do *not* modify the names in this list / the apostrophes
 -- "Insta360 Link 2"
 local preferredInputDevices = {
+    -- "Insta360 Link 2", -- Insta360 Link 2 output
     "Wave Link Stream", -- Elgato Wave:3 output (_after_ effects)
     -- "Shure MV7+",
     -- "C922 Pro Stream Webcam",
