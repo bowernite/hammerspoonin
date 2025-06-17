@@ -31,6 +31,22 @@ local function setInputDevice(dev)
     logAction("Switched input to:", dev:name())
 end
 
+local function hasElgatoDevice(audioDevices)
+    for _, dev in ipairs(audioDevices) do
+        if string.lower(dev:name()):find("elgato") then
+            return true
+        end
+    end
+    return false
+end
+
+local function shouldConsiderDevice(deviceName, audioDevices)
+    if deviceName == "Wave Link Stream" then
+        return hasElgatoDevice(audioDevices)
+    end
+    return true
+end
+
 local function useBuiltinIfInOffice()
     local audioDevices = hs.audiodevice.allInputDevices()
     local webcamConnected = false
@@ -76,10 +92,12 @@ local function ensurePrioritizedInputDevice()
     end
 
     for _, deviceName in ipairs(preferredInputDevices) do
-        for _, dev in ipairs(audioDevices) do
-            if dev:name() == deviceName then
-                setInputDevice(dev)
-                return
+        if shouldConsiderDevice(deviceName, audioDevices) then
+            for _, dev in ipairs(audioDevices) do
+                if dev:name() == deviceName then
+                    setInputDevice(dev)
+                    return
+                end
             end
         end
     end
