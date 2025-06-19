@@ -1,3 +1,6 @@
+-- Note: Occasional cask upgrade failures like "App already exists" are typically
+-- one-off issues from interrupted upgrades. Manual intervention is preferred over 
+-- auto-fixing to avoid masking underlying problems.
 require("utils/log")
 require("utils/log")
 local network = require("utils/network")
@@ -18,21 +21,21 @@ local function executeBrewCommand(command, description, env)
         SUDO_ASKPASS = askpassPath,
         HOMEBREW_NO_ENV_HINTS = "1"
     }
-    
+
     -- Merge default env with provided env
     if env then
         for key, value in pairs(env) do
             defaultEnv[key] = value
         end
     end
-    
+
     -- Build env prefix
     for key, value in pairs(defaultEnv) do
         envPrefix = envPrefix .. key .. "=" .. value .. " "
     end
 
     local fullCommand = envPrefix .. brewCommand .. " " .. command .. " 2>&1"
-    
+
     local output = runCommand(fullCommand)
     local result = output:read("*all")
     output:close()
@@ -67,7 +70,7 @@ local function updateHomebrew()
             log("Homebrew update skipped due to connectivity issues")
             return
         end
-        
+
         logError("Homebrew update failed", {
             updateResult = updateResult
         }, updateResult)
@@ -84,14 +87,14 @@ local function updateHomebrew()
             log("Homebrew formula upgrade skipped due to connectivity issues")
             return
         end
-        
+
         if isSudoPasswordFailure(upgradeResult) then
             logError("Homebrew upgrade failed due to incorrect sudo password", {
                 upgradeResult = upgradeResult
             }, upgradeResult)
             return
         end
-        
+
         logError("Homebrew formula upgrade failed", {
             upgradeResult = upgradeResult
         }, upgradeResult)
@@ -110,14 +113,14 @@ local function updateHomebrew()
             log("Homebrew cask upgrade skipped due to connectivity issues")
             return
         end
-        
+
         if isSudoPasswordFailure(caskResult) then
             logError("Homebrew cask upgrade failed due to incorrect sudo password", {
                 caskResult = caskResult
             }, caskResult)
             return
         end
-        
+
         logError("Homebrew cask upgrade failed", {
             caskResult = caskResult
         }, caskResult)
@@ -127,20 +130,20 @@ local function updateHomebrew()
     log("Homebrew cask upgrade completed", {
         caskResult = caskResult
     })
-    
+
     local cleanupResult = executeBrewCommand("cleanup", "Cleaning up...")
     if not isCommandSuccessful(cleanupResult) then
         if network.isConnectivityError(cleanupResult) then
             log("Homebrew cleanup skipped due to connectivity issues")
             return
         end
-        
+
         logError("Homebrew cleanup failed", {
             cleanupResult = cleanupResult
         }, cleanupResult)
         return
     end
-    
+
     log("Homebrew cleanup completed", {
         cleanupResult = cleanupResult
     })

@@ -4,6 +4,7 @@ require("windows/default_window_sizes")
 require("windows/window_blacklist")
 require("utils/caffeinate")
 require("boot")
+require("utils/screen_utils")
 
 windowScreenMap = {}
 centeredWindows = {}
@@ -88,7 +89,8 @@ local function adjustWindowIfNecessary(window)
     local frame = window:frame()
     -- if frame.w == 1728 and frame.h == 1079 and frame.x == 0 and frame.y == 361 then
     -- if frame.w == 1728 and frame.h == 1079 and frame.x == 0 then
-    if (frame.w >= 1715 and frame.w <= 1740) and (frame.h >= 1075 and frame.h <= 1085) then
+    local windowIsSizeOfBuiltinDisplay = (frame.w >= 1715 and frame.w <= 1740) and (frame.h >= 1075 and frame.h <= 1085)
+    if windowIsSizeOfBuiltinDisplay and not isPrimaryDisplayBuiltIn() then
         logAction("Window is dimensions of MacBook built-in screen (16\"); maximizing", {
             window = window,
             frame = frame
