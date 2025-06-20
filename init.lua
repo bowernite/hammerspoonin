@@ -30,6 +30,7 @@ require("audio_devices")
 ---------------------------
 -- WIP / not sure about yet
 ------------------------------------------------
+require("autojoin_hotspot")
 require("forced_breaks")
 require("hammerspoon_console_auto_dark_mode")
 require("work/work")
