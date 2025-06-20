@@ -1,49 +1,91 @@
+-------------------------------------------------------
+-- Hammerspoon Configuration
+-- 
+-- Main initialization file following proper Lua module patterns
+-- Coordinates all modules and handles startup sequence
+-------------------------------------------------------
+
+-- Clear console and set up basic configuration
 hs.console.clearConsole()
 hs.console.consoleFont({
     name = "Menlo",
     size = 18
 })
 
+-- Install CLI if needed
 hs.ipc.cliInstall()
 
--- Preload common modules
--- experiment: Delaying 5 seconds, so Hammerspoon is responsive quicker on startup..?
--- hs.timer.doAfter(5, function()
---     local fnutils = hs.fnutils
---     local styledtext = hs.styledtext
---     local alert = hs.alert
---     local fs = hs.fs
---     local notify = hs.notify
---     local application = hs.application
---     local location = hs.location
--- end)
+-- Load utility modules first (these provide global functions for backward compatibility)
+local log = require('utils.log')
 
+-- Load all main modules
+local audioManager = require('modules.audio.manager')
+local windowManager = require('modules.window.manager')
+local appManager = require('modules.apps.manager')
+local bootManager = require('modules.system.boot')
+local networkManager = require('modules.network.manager')
+local screenManager = require('modules.system.screen')
+
+-- Load legacy modules that haven't been converted yet
 require("screen_color_and_brightness")
 require("homebrew_autoupdate")
--- Cold Turkey is fine for now
--- require("night_blocking")
--- New finder windows annoying
--- Without this, it's just... stupid. On the other hand, when it's on it's still not bulletproof. Still going back and forth... As of now, it does still work sometimes, so it's not nothing
-require("windows/window_management")
-require("audio_devices")
-
----------------------------
--- WIP / not sure about yet
-------------------------------------------------
 require("forced_breaks")
 require("hammerspoon_console_auto_dark_mode")
-require("work/work")
 
-------------------------------------------------
--- Annoying things to be enabled while developing
-------------------------------------------------
-require("reset_apps")
--- require("daily_restart")
--- Do I really need this? It's good in theory, but it _is_ complicating my life
--- resetAppsEveryMorning()
-require("boot")
--- defaultAppState()
--- require("morning_space")
+-- Store managers globally for access from other modules
+_G.HammerspoonManagers = {
+    audio = audioManager,
+    window = windowManager,
+    apps = appManager,
+    boot = bootManager,
+    network = networkManager,
+    screen = screenManager
+}
 
--- Current Finder functionality is buggy -- we can pick this up later
--- require("fresh_unlock")
+-- Initialize all modules
+local function initializeModules()
+    log.log("Initializing Hammerspoon modules...")
+    
+    -- Start core functionality
+    audioManager.start()
+    windowManager.start()
+    networkManager.start()
+    screenManager.start()
+    
+    log.log("All modules initialized successfully")
+end
+
+-- Handle system boot sequence
+local function handleBootSequence()
+    bootManager.recordReload()
+    
+    if bootManager.runBootSequence() then
+        log.logAction("Boot sequence completed")
+    else
+        log.log("Skipped boot sequence - regular reload")
+    end
+end
+
+-- Main initialization
+local function main()
+    log.log("Starting Hammerspoon configuration...")
+    
+    -- Initialize modules
+    initializeModules()
+    
+    -- Handle boot sequence
+    handleBootSequence()
+    
+    -- Load work-specific configuration if it exists
+    local workConfig = "work/work"
+    local workConfigPath = hs.fs.pathToAbsolute(workConfig .. ".lua")
+    if workConfigPath then
+        log.log("Loading work configuration")
+        require(workConfig)
+    end
+    
+    log.log("Hammerspoon configuration loaded successfully")
+end
+
+-- Run main initialization
+main()

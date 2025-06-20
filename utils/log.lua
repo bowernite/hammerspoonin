@@ -8,6 +8,8 @@ local BLACKLIST_RULES = {{
     filename = "window_management.lua"
 }}
 
+local M = {}
+
 -- Utility function to format screen dimensions
 local function formatScreenForLog(screen)
     if not screen then
@@ -126,7 +128,7 @@ end
 local lastLogTime = os.time()
 
 -- Convenience logger function, with lots of useful functionality
-function log(message, details, styleOptions, level)
+function M.log(message, details, styleOptions, level)
     -- Add newlines every 30 minutes, to visualize the time elapsed between logs
     local currentTime = os.time()
     local timeDiff = currentTime - lastLogTime
@@ -190,8 +192,8 @@ function log(message, details, styleOptions, level)
 end
 
 -- Logger function for when we're going to do a concrete action (e.g. maximize a window, kill an app, etc.)
-function logAction(message, details)
-    log(message, details, {
+function M.logAction(message, details)
+    M.log(message, details, {
         backgroundColor = {
             red = 0,
             green = 0,
@@ -201,8 +203,8 @@ function logAction(message, details)
 end
 
 -- Logger function for errors
-function logError(message, details, notificationMessage)
-    log(message, details, {
+function M.logError(message, details, notificationMessage)
+    M.log(message, details, {
         color = {
             red = 1,
             green = 0,
@@ -218,8 +220,8 @@ function logError(message, details, notificationMessage)
 end
 
 -- Logger function for warnings
-function logWarning(message, details)
-    log(message, details, {
+function M.logWarning(message, details)
+    M.log(message, details, {
         color = {
             red = 1,
             green = 1,
@@ -232,4 +234,12 @@ function logWarning(message, details)
         }
     }, 3)
 end
+
+-- For backward compatibility, set global functions
+log = M.log
+logAction = M.logAction
+logError = M.logError
+logWarning = M.logWarning
+
+return M
 
