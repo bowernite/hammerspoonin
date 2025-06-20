@@ -60,7 +60,7 @@ local function init()
     -- Add wake watcher to check networks when system wakes up
     addWakeWatcher(function(eventType)
         -- Wait a few seconds after wake to let WiFi stabilize
-        hs.timer.doAfter(5, function()
+        hs.timer.doAfter(2, function()
             checkAndConnectToHotspot()
         end)
     end)
