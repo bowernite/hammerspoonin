@@ -7,17 +7,11 @@
 require("utils/log")
 
 -- List of input devices, in priority order
--- Do *not* modify the names in this list / the apostrophes
--- "Insta360 Link 2"
+-- De-duplicated and added MacBook Pro Microphone as last fallback
 local preferredInputDevices = {
-    -- "Insta360 Link 2", -- Insta360 Link 2 output
-    "Wave Link Stream", -- Elgato Wave:3 output (_after_ effects)
-    -- "Shure MV7+",
-    -- "C922 Pro Stream Webcam",
-    "Brett's AirPods",
-    "Brett's AirPods Pro",
-    "Brett's AirPods Pro",
-    "Brett's AirPods"
+    "Wave Link Stream",            -- Only if Elgato USB present
+    "🎧 Brett's AirPods",
+    "MacBook Pro Microphone"       -- Always last fallback
 }
 
 local function setInputDevice(dev)
@@ -27,56 +21,36 @@ local function setInputDevice(dev)
         log("Device already default:", dev:name())
         return
     end
-    dev:setDefaultInputDevice()
-    logAction("Switched input to:", dev:name())
+    
+    -- Add guard: only set if device is input device (removed online() check as it doesn't exist)
+    if dev:isInputDevice() then
+        dev:setDefaultInputDevice()
+        logAction("Switched input to:", dev:name())
+    else
+        logWarning("Cannot set input device - device not available:", dev:name())
+    end
 end
 
-local function hasElgatoDevice(audioDevices)
-    for _, dev in ipairs(audioDevices) do
-        if string.lower(dev:name()):find("elgato") then
+-- Check for actual Elgato USB hardware presence instead of audio device name matching
+local function hasElgatoDevice()
+    local usbDevices = hs.usb.attachedDevices()
+    for _, device in ipairs(usbDevices) do
+        -- Check for Elgato vendor ID (0x0FD9) or Wave product names
+        if device.vendorID == 0x0FD9 or 
+           (device.productName and device.productName:match("Wave")) then
+            log("Found Elgato USB device:", device.productName or "Unknown")
             return true
         end
     end
     return false
 end
 
-local function shouldConsiderDevice(deviceName, audioDevices)
+local function shouldConsiderDevice(deviceName)
+    -- Short-circuit Wave Link Stream if no Elgato hardware present
     if deviceName == "Wave Link Stream" then
-        return hasElgatoDevice(audioDevices)
+        return hasElgatoDevice()
     end
     return true
-end
-
-local function useBuiltinIfInOffice()
-    local audioDevices = hs.audiodevice.allInputDevices()
-    local webcamConnected = false
-    local builtInAvailable = false
-    local builtInDevice = nil
-
-    for _, dev in ipairs(audioDevices) do
-        if dev:name() == "C922 Pro Stream Webcam" or dev:name() == "Insta360 Link 2" then
-            webcamConnected = true
-        end
-        if dev:transportType() == "Built-in" and dev:jackConnected() then
-            builtInAvailable = true
-            builtInDevice = dev
-        end
-    end
-
-    log("Checking if webcam is connected and built-in is available", {
-        webcamConnected = webcamConnected,
-        builtInAvailable = builtInAvailable,
-        builtInDevice = builtInDevice
-    })
-
-    -- TODO: Doesn't work yet, can't get a watcher to fire when built-in availability changes
-    -- TODO: Also, builtinAvailable is always false still. jackConnected doesn't seem to work as we're trying to use it 
-    -- if builtInStatus.webcamConnected and builtInStatus.builtInAvailable and builtInStatus.builtInDevice then
-    --     setInputDevice(builtInStatus.builtInDevice)
-    --     return true
-    -- end
-
-    return false
 end
 
 local function ensurePrioritizedInputDevice()
@@ -86,33 +60,50 @@ local function ensurePrioritizedInputDevice()
         currentInputDevice = hs.audiodevice.defaultInputDevice()
     })
 
-    local switchedToBuiltIn = useBuiltinIfInOffice()
-    if switchedToBuiltIn then
-        return
-    end
-
     for _, deviceName in ipairs(preferredInputDevices) do
-        if shouldConsiderDevice(deviceName, audioDevices) then
-            for _, dev in ipairs(audioDevices) do
-                if dev:name() == deviceName then
-                    setInputDevice(dev)
-                    return
-                end
+        if shouldConsiderDevice(deviceName) then
+            -- Use findInputByName for cleaner, faster lookup
+            local device = hs.audiodevice.findInputByName(deviceName)
+            if device then
+                setInputDevice(device)
+                return
             end
         end
     end
 
+    -- Structured logging for debugging when no preferred device found
     logWarning("No preferred input device found; input device was not changed")
+    log("Available audio devices:", hs.json.encode(audioDevices))
 end
 
 -- Watch for changes in audio devices
-local watcher = hs.audiodevice.watcher
-watcher.setCallback(function(event)
+AUDIO_WATCHER = hs.audiodevice.watcher
+AUDIO_WATCHER.setCallback(function(event)
     log("audioDeviceCallback", event)
-    local deviceListChangedEvent = "dev#"
     if event == "dev#" then
         log("audioDeviceCallback; setting default input device")
         ensurePrioritizedInputDevice()
     end
 end)
-watcher.start()
+AUDIO_WATCHER.start()
+
+-- Watch for USB device changes (specifically for Elgato devices)
+-- Fixed: USB watcher callback receives one table parameter, not separate device and event
+USB_WATCHER = hs.usb.watcher.new(function(data)
+    log("USB device event:", {eventType = data.eventType, vendorID = data.vendorID, productName = data.productName})
+    -- Check if this is an Elgato device (guard against nil productName)
+    if data.vendorID == 0x0FD9 or 
+       (data.productName and data.productName:match("Wave")) then
+        log("Elgato USB device change detected, updating input device")
+        ensurePrioritizedInputDevice()
+    end
+end)
+USB_WATCHER:start()
+
+-- Optional: Safety timer as belt-and-suspenders backup with pcall protection
+AUDIO_SAFETY_TIMER = hs.timer.doEvery(10, function()
+    pcall(ensurePrioritizedInputDevice)
+end)
+
+-- Ensure proper device is set on initial load
+ensurePrioritizedInputDevice()
