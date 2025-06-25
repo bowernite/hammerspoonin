@@ -100,10 +100,10 @@ USB_WATCHER = hs.usb.watcher.new(function(data)
 end)
 USB_WATCHER:start()
 
--- Optional: Safety timer as belt-and-suspenders backup with pcall protection
-AUDIO_SAFETY_TIMER = hs.timer.doEvery(10, function()
-    pcall(ensurePrioritizedInputDevice)
-end)
+-- Optional: Safety timer disabled to avoid overriding manual user choices
+-- AUDIO_SAFETY_TIMER = hs.timer.doEvery(10, function()
+--     pcall(ensurePrioritizedInputDevice)
+-- end)
 
 -- Ensure proper device is set on initial load
 ensurePrioritizedInputDevice()
