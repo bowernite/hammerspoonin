@@ -17,7 +17,12 @@ local function checkAndConnectToHotspot()
             logWarning("Network scan failed: " .. networks)
             return
         end
-        log("Available networks: " .. hs.inspect(networks))
+        
+        local networkNames = {}
+        for _, network in ipairs(networks) do
+            table.insert(networkNames, network.ssid)
+        end
+        log("Available networks: " .. table.concat(networkNames, ", "))
 
         local homeWifiAvailable = false
         local hotspotAvailable = false
