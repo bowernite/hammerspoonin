@@ -36,6 +36,11 @@ BLACKLIST_RULES = {{
 }, {
     -- Sometimes auth windows don't have titles right away / are "about:blank" (e.g. PayPal)
     window = "about:blank"
+}, {
+    -- Any Jackbox-related app
+    app = "jackbox"
+}, {
+    window = "jackbox"
 }}
 
 -- Function to check if a window is blacklisted
@@ -62,8 +67,8 @@ function isWindowBlacklisted(window)
             return false
         end
 
-        local appMatch = not rule.app or appName == rule.app
-        local windowMatch = not rule.window or (windowName and windowName:find(rule.window))
+        local appMatch = not rule.app or (appName and string.find(string.lower(appName), string.lower(rule.app), 1, true))
+        local windowMatch = not rule.window or (windowName and string.find(string.lower(windowName), string.lower(rule.window), 1, true))
         if appMatch and windowMatch then
             return true
         end

@@ -14,6 +14,41 @@ local function hasInternetConnection()
     return result:match("connected") ~= nil
 end
 
+--- Check if command output indicates a connectivity error
+---
+--- Parameters:
+---  * output - String, command output to analyze
+---
+--- Returns:
+---  * Boolean, true if the output indicates a connectivity/network error
+local function isConnectivityError(output)
+    if not output then
+        return false
+    end
+    
+    local connectivityPatterns = {
+        "Failed to connect",
+        "Connection timeout",
+        "Network is unreachable",
+        "Could not resolve host",
+        "No route to host",
+        "Connection refused",
+        "curl:.*Connection timed out",
+        "curl:.*Could not resolve host",
+        "getaddrinfo.*nodename nor servname provided",
+        "Failed to download resource",
+        "Error: No such file or directory"
+    }
+    
+    for _, pattern in ipairs(connectivityPatterns) do
+        if output:match(pattern) then
+            return true
+        end
+    end
+    
+    return false
+end
+
 --- Connect to any WiFi network (async)
 ---
 --- Parameters:
@@ -78,5 +113,6 @@ end
 
 return {
     hasInternetConnection = hasInternetConnection,
-    connectToNetwork = connectToNetwork
+    connectToNetwork = connectToNetwork,
+    isConnectivityError = isConnectivityError
 }
