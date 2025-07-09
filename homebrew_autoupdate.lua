@@ -12,6 +12,15 @@ local function runCommand(command)
     return io.popen(command)
 end
 
+local function extractBrewError(output)
+    for line in output:gmatch("[^\r\n]+") do
+        if line:match("^Error:") then
+            return line:gsub("^Error: ", "")
+        end
+    end
+    return nil
+end
+
 local function executeBrewCommand(command, description, env)
     log("Running: " .. command)
 
@@ -73,7 +82,7 @@ local function updateHomebrew()
 
         logError("Homebrew update failed", {
             updateResult = updateResult
-        }, updateResult)
+        }, extractBrewError(updateResult))
         return
     end
 
@@ -91,13 +100,13 @@ local function updateHomebrew()
         if isSudoPasswordFailure(upgradeResult) then
             logError("Homebrew upgrade failed due to incorrect sudo password", {
                 upgradeResult = upgradeResult
-            }, upgradeResult)
+            }, extractBrewError(upgradeResult))
             return
         end
 
         logError("Homebrew formula upgrade failed", {
             upgradeResult = upgradeResult
-        }, upgradeResult)
+        }, extractBrewError(upgradeResult))
         return
     end
 
@@ -117,13 +126,13 @@ local function updateHomebrew()
         if isSudoPasswordFailure(caskResult) then
             logError("Homebrew cask upgrade failed due to incorrect sudo password", {
                 caskResult = caskResult
-            }, caskResult)
+            }, extractBrewError(caskResult))
             return
         end
 
         logError("Homebrew cask upgrade failed", {
             caskResult = caskResult
-        }, caskResult)
+        }, extractBrewError(caskResult))
         return
     end
 
@@ -140,7 +149,7 @@ local function updateHomebrew()
 
         logError("Homebrew cleanup failed", {
             cleanupResult = cleanupResult
-        }, cleanupResult)
+        }, extractBrewError(cleanupResult))
         return
     end
 
