@@ -113,7 +113,7 @@ function maximizeWindow(window)
     maximizeWindowManually(window)
 
     local firstDelay = 0.6
-    local subsequentDelay = 0.2
+    local subsequentDelay = 0.6
     local firstRetryCallback = function()
         maximizeWindowManually(window)
         local secondRetryCallback = function()
