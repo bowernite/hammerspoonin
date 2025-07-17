@@ -112,16 +112,17 @@ function maximizeWindow(window)
 
     maximizeWindowManually(window)
 
-    local delay = 0.3
+    local firstDelay = 0.6
+    local subsequentDelay = 0.2
     local firstRetryCallback = function()
         maximizeWindowManually(window)
         local secondRetryCallback = function()
             maximizeWindowManually(window)
         end
-        local secondTimer = hs.timer.doAfter(delay, secondRetryCallback)
+        local secondTimer = hs.timer.doAfter(subsequentDelay, secondRetryCallback)
         table.insert(_G.windowMaximizeTimers, secondTimer)
     end
-    local firstTimer = hs.timer.doAfter(delay, firstRetryCallback)
+    local firstTimer = hs.timer.doAfter(firstDelay, firstRetryCallback)
     table.insert(_G.windowMaximizeTimers, firstTimer)
 
     maximizedWindows[window:id()] = true
