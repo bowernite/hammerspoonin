@@ -120,7 +120,7 @@ local function startColima()
 end
 
 local essentialApps = {"Messages", "Cursor", "Slack", "Notion Calendar", "kitty", "Reminders", "Obsidian", "Vivid",
-                       "Google Chrome", "Notion", "Trello", "Hammerspoon", "Elgato Wave Link"}
+                       "Google Chrome", "Notion", "Trello", "Hammerspoon", "Wave Link"}
 
 function killInessentialApps()
     logAction("Killing inessential apps")
