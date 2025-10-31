@@ -2,7 +2,7 @@ require("utils/log")
 require("utils/utils")
 
 local BLOCKS = {
-    Messages = "Messages",
+    -- Messages = "Messages",
     Work = "Work"
 }
 
@@ -25,14 +25,13 @@ local function startColdTurkeyBlock(blockName)
 end
 
 -- Create daily tasks for all blocks
-local coldTurkeyTasks = {}
 for blockKey, blockName in pairs(BLOCKS) do
     local taskName = "Start Cold Turkey Blocker " .. blockName
     local taskFunction = function()
         return startColdTurkeyBlock(blockName)
     end
     log("Creating daily task for " .. taskName)
-    coldTurkeyTasks[blockKey] = createDailyTask("05:00", taskFunction, taskName)
+    createDailyTask("05:00", taskFunction, taskName)
 end
 
 log("Cold Turkey daily blocker automation loaded")

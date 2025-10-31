@@ -107,11 +107,4 @@ local function maxOutBrightness()
     return false
 end
 
-local maxOutBrightnessTask = createDailyTask("05:00", maxOutBrightness, "Max out brightness (external monitor)")
-
-addWakeWatcher(function()
-    -- temp: see if this fixes an issue where this doesn't work properly
-    hs.timer.doAfter(3, function()
-        maxOutBrightnessTask()
-    end)
-end)
+createDailyTask("05:00", maxOutBrightness, "Max out brightness (external monitor)", { wakeDelay = 3 })

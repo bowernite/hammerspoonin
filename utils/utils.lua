@@ -145,20 +145,21 @@ end
 
 -- Initialize global table for timers if it doesn't exist. Timers are stored in this table to prevent garbage collection.
 _G.dailyTaskTimers = _G.dailyTaskTimers or {}
+_G.dailyTaskWakeHandlers = _G.dailyTaskWakeHandlers or {}
 
-function createDailyTask(resetTime, taskFunction, taskName)
+function createDailyTask(resetTime, taskFunction, taskName, options)
+    options = options or {}
+    local wakeDelay = options.wakeDelay or 0
+    
     local hasRunToday = false
     local resetTimer = nil
 
     local function resetState()
-        log("Reset state triggered")
+        log("Reset state triggered for " .. taskName)
         hasRunToday = false
     end
 
-    resetTimer = hs.timer.doAt(resetTime, "1d", resetState)
-    table.insert(_G.dailyTaskTimers, resetTimer)
-
-    return function()
+    local function checkAndRunTask()
         local currentTime = os.date("*t")
         local resetHour = tonumber(resetTime:match("(%d+):"))
         log("Checking if daily task should run", {
@@ -168,16 +169,33 @@ function createDailyTask(resetTime, taskFunction, taskName)
             taskName = taskName
         })
         if not hasRunToday and currentTime.hour >= resetHour then
-            log("Attempting to run daily task")
-            local result = taskFunction()
+            log("Attempting to run daily task: " .. taskName)
+            local success, result = pcall(taskFunction)
+            if not success then
+                logError("Error running daily task " .. taskName .. ": " .. tostring(result))
+                return
+            end
             log("Daily task result", {
-                result = tostring(result)
+                result = tostring(result),
+                taskName = taskName
             })
             if result then
                 hasRunToday = true
                 log("Daily task ran successfully (" .. taskName .. ")")
-                -- hs.notify.show("Daily task ran successfully", taskName, "")
             end
         end
     end
+
+    resetTimer = hs.timer.doAt(resetTime, "1d", resetState)
+    table.insert(_G.dailyTaskTimers, resetTimer)
+
+    local wakeHandler = function()
+        if wakeDelay > 0 then
+            hs.timer.doAfter(wakeDelay, checkAndRunTask)
+        else
+            checkAndRunTask()
+        end
+    end
+    table.insert(_G.dailyTaskWakeHandlers, wakeHandler)
 end
+

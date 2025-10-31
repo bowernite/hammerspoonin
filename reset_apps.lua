@@ -28,11 +28,7 @@ function resetAppsEveryMorning()
         return true
     end
 
-    local resetTask = createDailyTask("04:00", resetAppsTask, "Reset apps")
-
-    addWakeWatcher(function()
-        resetTask()
-    end)
+    createDailyTask("04:00", resetAppsTask, "Reset apps")
 end
 
 -- This doesn't work. Instead, use `hs -c "resetApps()"` from the command line.

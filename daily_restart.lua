@@ -157,13 +157,5 @@ local function restartComputer()
     end
 end
 
--- Create the daily task with error handling
-local dailyRestartTask = createDailyTask("04:00", restartComputer, "Daily computer restart")
-
--- Add wake watcher with protected execution
-local wakeWatcherID = addWakeWatcher(function()
-    local success, result = pcall(dailyRestartTask)
-    if not success then
-        logError("Error running daily restart task: " .. tostring(result))
-    end
-end)
+-- Create the daily task
+createDailyTask("04:00", restartComputer, "Daily computer restart")
