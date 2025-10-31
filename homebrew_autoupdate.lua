@@ -65,7 +65,7 @@ local function isSudoPasswordFailure(result)
     return result:match("Sorry, try again") ~= nil
 end
 
-local function updateHomebrew()
+function updateHomebrew()
     logAction("Running Homebrew update and upgrade")
 
     if not network.hasInternetConnection() then
