@@ -8,9 +8,15 @@ local BLOCKS = {"Blocked 🔒", "Email and LinkedIn Messages", "Friction",
                 "Friction (soft)", "Home", "Messages", "Morning Space ☀️",
                 "Scrolling 🤳🏼", "Work", "Work (end of day)"}
 
+local function buildStartCommand(blockName)
+  local flags = "-as-is"
+  local args = " -start " .. blockName .. " " .. flags
+  return COLD_TURKEY .. " " .. args .. " 2>&1"
+end
+
 function startColdTurkeyBlock(blockName)
   log("Starting Cold Turkey Blocker " .. blockName .. " block")
-  local command = '"' .. COLD_TURKEY .. '" -start "' .. blockName .. '" 2>&1'
+  local command = buildStartCommand(blockName)
   local output, status, type, rc = hs.execute(command, true)
 
   if status then
@@ -24,12 +30,13 @@ function startColdTurkeyBlock(blockName)
       logAction("Started Cold Turkey Blocker " .. blockName .. " block")
       return true
     else
-      logError("Failed to start Cold Turkey Blocker " .. blockName .. " block", {
-        output = output,
-        status = status,
-        type = type,
-        returnCode = rc
-      })
+      logError("Failed to start Cold Turkey Blocker " .. blockName .. " block",
+        {
+          output = output,
+          status = status,
+          type = type,
+          returnCode = rc
+        })
       return false
     end
   end
