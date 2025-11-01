@@ -10,8 +10,8 @@ local BLOCKS = {"Blocked 🔒", "Email and LinkedIn Messages", "Friction",
 
 local function buildStartCommand(blockName)
   local flags = "-as-is"
-  local args = " -start " .. blockName .. " " .. flags
-  return COLD_TURKEY .. " " .. args .. " 2>&1"
+  local args = ' -start "' .. blockName .. '" ' .. flags
+  return '"' .. COLD_TURKEY .. '"' .. args .. " 2>&1"
 end
 
 function startColdTurkeyBlock(blockName)
