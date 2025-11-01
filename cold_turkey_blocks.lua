@@ -5,8 +5,8 @@ local COLD_TURKEY =
   "/Applications/Cold Turkey Blocker.app/Contents/MacOS/Cold Turkey Blocker"
 
 local BLOCKS = {"Blocked 🔒", "Email and LinkedIn Messages", "Friction",
-                "Friction (soft)", "Home", "Messages", "Morning Space ☀️",
-                "Scrolling 🤳🏼", "Work", "Work (end of day)"}
+                "Friction - soft", "Home", "Messages", "Morning Space ☀️",
+                "Scrolling 🤳🏼", "Work", "Work - end of day"}
 
 local function buildStartCommand(blockName)
   local flags = "-as-is"
