@@ -30,7 +30,9 @@ require("audio_devices")
 ---------------------------
 -- WIP / not sure about yet
 ------------------------------------------------
-require("cold_turkey_blocks")
+-- 12/3/25: Testing out not using this, since Cold Turkey allegedly is now better at blocking even if the device isn't awake/unlocked.
+-- require("cold_turkey_blocks")
+
 require("autojoin_hotspot")
 require("forced_breaks")
 require("hammerspoon_console_auto_dark_mode")

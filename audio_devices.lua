@@ -9,7 +9,8 @@ require("utils/log")
 -- List of input devices, in priority order
 -- De-duplicated and added MacBook Pro Microphone as last fallback
 local preferredInputDevices = {
-    "Wave Link Stream",            -- Only if Elgato USB present
+    -- "Wave Link Stream",            -- Only if Elgato USB present
+    "Elgato Wave:3",
     "🎧 Brett's AirPods",
     "MacBook Pro Microphone"       -- Always last fallback
 }
