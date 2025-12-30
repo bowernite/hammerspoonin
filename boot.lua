@@ -222,19 +222,12 @@ if isActualSystemBoot() then
   logAction("Running boot startup sequence")
   startColima()
 
-  -- Show alert and schedule hiding all windows after delay
-  local HIDE_WINDOWS_DELAY = 10 -- Wait 10 seconds before hiding windows, so we know the default window size is set first
-  hs.alert.show("System booted - windows will be hidden in " ..
-                  HIDE_WINDOWS_DELAY .. " seconds", HIDE_WINDOWS_DELAY)
+  -- Show alert and hide all windows
+  hs.alert.show("System booted - hiding all windows")
 
   -- Schedule hiding all windows after delay
-  log("Scheduling hideAllApps in " .. HIDE_WINDOWS_DELAY .. " seconds")
-  HIDE_WINDOWS_ON_BOOT_TIMER = hs.timer.doAfter(HIDE_WINDOWS_DELAY, function()
-    logAction(HIDE_WINDOWS_DELAY ..
-                " seconds elapsed after boot - hiding all windows")
-    hs.alert.show("Hiding all windows now...", 3)
-    hideAllApps()
-  end)
+  logAction("System booted - hiding all windows")
+  hideAllApps()
 else
   log("Skipping boot sequence - not an actual system boot")
 end
