@@ -11,7 +11,7 @@ require("utils/log")
 local preferredInputDevices = {
     -- "Wave Link Stream",            -- Only if Elgato USB present
     "Elgato Wave:3",
-    "🎧 Brett's AirPods",
+    "Brett's AirPods",
     "MacBook Pro Microphone"       -- Always last fallback
 }
 
@@ -78,12 +78,21 @@ local function ensurePrioritizedInputDevice()
 end
 
 -- Watch for changes in audio devices
+-- Debounce so we wait for macOS's event storm to settle before enforcing preference
+local audioDebounceTimer = nil
+local AUDIO_DEBOUNCE_SECONDS = 0.5
+
 AUDIO_WATCHER = hs.audiodevice.watcher
 AUDIO_WATCHER.setCallback(function(event)
     log("audioDeviceCallback", event)
-    if event == "dev#" then
-        log("audioDeviceCallback; setting default input device")
-        ensurePrioritizedInputDevice()
+    if event == "dev#" or event == "dIn " then
+        if audioDebounceTimer then
+            audioDebounceTimer:stop()
+        end
+        audioDebounceTimer = hs.timer.doAfter(AUDIO_DEBOUNCE_SECONDS, function()
+            log("audioDeviceCallback (debounced); setting default input device")
+            ensurePrioritizedInputDevice()
+        end)
     end
 end)
 AUDIO_WATCHER.start()
