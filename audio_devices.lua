@@ -11,6 +11,7 @@ require("utils/log")
 local preferredInputDevices = {
     -- "Wave Link Stream",            -- Only if Elgato USB present
     "Elgato Wave:3",
+    "C922 Pro Stream Webcam",
     "Brett's AirPods",
     "MacBook Pro Microphone"       -- Always last fallback
 }
