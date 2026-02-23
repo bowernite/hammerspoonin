@@ -16,6 +16,20 @@ local preferredInputDevices = {
     "MacBook Pro Microphone"       -- Always last fallback
 }
 
+local function normalizeDeviceName(name)
+    if not name then
+        return ""
+    end
+
+    -- Normalize common punctuation differences (straight vs smart quotes)
+    -- and compare case-insensitively so minor renames don't break matching.
+    local normalized = name
+        :gsub("[’']", "") -- strip both straight and curly apostrophes
+        :lower()
+
+    return normalized
+end
+
 local function setInputDevice(dev)
     log("Ensuring input device is set to:", dev:name())
     local currentInputDevice = hs.audiodevice.defaultInputDevice()
@@ -64,11 +78,15 @@ local function ensurePrioritizedInputDevice()
 
     for _, deviceName in ipairs(preferredInputDevices) do
         if shouldConsiderDevice(deviceName) then
-            -- Use findInputByName for cleaner, faster lookup
-            local device = hs.audiodevice.findInputByName(deviceName)
-            if device then
-                setInputDevice(device)
-                return
+            local targetName = normalizeDeviceName(deviceName)
+
+            -- Match against the actual list of input devices we just fetched,
+            -- using normalized names so small naming differences don't break priority.
+            for _, dev in ipairs(audioDevices) do
+                if normalizeDeviceName(dev:name()) == targetName then
+                    setInputDevice(dev)
+                    return
+                end
             end
         end
     end
