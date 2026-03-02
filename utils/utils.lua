@@ -166,7 +166,7 @@ function createDailyTask(resetTime, taskFunction, taskName, options)
 
   local function checkAndRunTask()
     local currentTime = os.date("*t")
-    local currentDay = string.format("%Y-%m-%d", currentTime.year,
+    local currentDay = string.format("%04d-%02d-%02d", currentTime.year,
       currentTime.month, currentTime.day)
     local resetHour = tonumber(resetTime:match("(%d+):"))
     local resetMin = tonumber(resetTime:match(":(%d+)"))
