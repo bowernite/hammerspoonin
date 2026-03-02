@@ -150,8 +150,13 @@ end
 
 -- Initialize global table for timers if it doesn't exist. Timers are stored in this table to prevent garbage collection.
 _G.dailyTaskTimers = _G.dailyTaskTimers or {}
-_G.dailyTaskWakeHandlers = _G.dailyTaskWakeHandlers or {}
 
+-- Daily tasks use three redundant triggers because none is reliable alone.
+-- See utils/DAILY_TASKS.md for full investigation and known issues.
+--   1. hs.timer.doAt — unreliable across sleep (NSTimer pauses during sleep)
+--   2. addWakeWatcher — fires on screen unlock (proven reliable, unlike _G globals)
+--   3. Periodic doEvery(2h) — fallback for edge cases
+-- All three call checkAndRunTask, which is idempotent (tracks lastRunDay).
 function createDailyTask(resetTime, taskFunction, taskName, options)
   options = options or {}
   local wakeDelay = options.wakeDelay or 0
@@ -200,13 +205,20 @@ function createDailyTask(resetTime, taskFunction, taskName, options)
   resetTimer = hs.timer.doAt(resetTime, "1d", checkAndRunTask)
   table.insert(_G.dailyTaskTimers, resetTimer)
 
-  local wakeHandler = function()
+  -- Periodic fallback check every 2 hours, in case the doAt timer doesn't survive sleep
+  local periodicTimer = hs.timer.doEvery(7200, checkAndRunTask)
+  table.insert(_G.dailyTaskTimers, periodicTimer)
+
+  -- Register via addWakeWatcher (local table in caffeinate.lua, proven reliable)
+  addWakeWatcher(function()
     if wakeDelay > 0 then
       hs.timer.doAfter(wakeDelay, checkAndRunTask)
     else
       checkAndRunTask()
     end
-  end
-  table.insert(_G.dailyTaskWakeHandlers, wakeHandler)
+  end)
+
+  -- Run an initial check on setup (e.g. after Hammerspoon reload)
+  checkAndRunTask()
 end
 

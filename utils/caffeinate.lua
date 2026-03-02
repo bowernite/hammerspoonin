@@ -51,11 +51,6 @@ watcher = hs.caffeinate.watcher.new(function(eventType)
                 tostring(isSleepEvent))
         if isWakeEvent then
             notifyListeners(wakeListeners, eventType)
-            if _G.dailyTaskWakeHandlers then
-                for _, handler in ipairs(_G.dailyTaskWakeHandlers) do
-                    handler()
-                end
-            end
         elseif isSleepEvent then
             notifyListeners(sleepListeners, eventType)
         end
