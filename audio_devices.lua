@@ -5,6 +5,7 @@
 -- - Prioritized list of input devices
 -------------------------------------------------------
 require("utils/log")
+require("utils/screen_utils")
 
 -- List of input devices, in priority order
 -- De-duplicated and added MacBook Pro Microphone as last fallback
@@ -12,8 +13,8 @@ local preferredInputDevices = {
     -- "Wave Link Stream",            -- Only if Elgato USB present
     "Elgato Wave:3",
     "C922 Pro Stream Webcam",
-    "Brett's AirPods",
-    "MacBook Pro Microphone"       -- Always last fallback
+    "MacBook Pro Microphone",
+    "Brett's AirPods"
 }
 
 local function normalizeDeviceName(name)
@@ -65,6 +66,14 @@ local function shouldConsiderDevice(deviceName)
     -- Short-circuit Wave Link Stream if no Elgato hardware present
     if deviceName == "Wave Link Stream" then
         return hasElgatoDevice()
+    end
+    -- On Apple Silicon/T2 Macs, the built-in mic is physically disconnected when the
+    -- lid is closed, but CoreAudio still lists it and hs.audiodevice has no API to
+    -- detect this. We use clamshell state as a proxy so the priority list falls through
+    -- to the next device (e.g. AirPods).
+    -- See: https://support.apple.com/guide/security/hardware-microphone-disconnect-secbbd20b00b
+    if deviceName == "MacBook Pro Microphone" then
+        return not isClamshellMode()
     end
     return true
 end
@@ -128,6 +137,22 @@ USB_WATCHER = hs.usb.watcher.new(function(data)
     end
 end)
 USB_WATCHER:start()
+
+-- Re-evaluate input device when screens change. Opening/closing the lid changes the
+-- screen configuration (built-in display appears/disappears), which fires this watcher.
+-- This is how we detect lid state transitions and switch away from (or back to) the
+-- built-in mic. Note: hs.caffeinate.watcher could also be used for wake events, but
+-- screen.watcher covers both lid-open-while-awake and wake-from-sleep scenarios.
+SCREEN_WATCHER = hs.screen.watcher.new(function()
+    log("Screen configuration changed, re-evaluating input device")
+    if audioDebounceTimer then
+        audioDebounceTimer:stop()
+    end
+    audioDebounceTimer = hs.timer.doAfter(AUDIO_DEBOUNCE_SECONDS, function()
+        ensurePrioritizedInputDevice()
+    end)
+end)
+SCREEN_WATCHER:start()
 
 -- Optional: Safety timer disabled to avoid overriding manual user choices
 -- AUDIO_SAFETY_TIMER = hs.timer.doEvery(10, function()
