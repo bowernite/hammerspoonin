@@ -5,6 +5,11 @@ require("utils/screen_utils")
 
 local eventtap = hs.eventtap
 
+-- Switch to "BetterDisplay" to use BetterDisplay instead of Flux for nighttime color management
+local NIGHT_MODE_APP = "Flux"
+-- Switch to "Vivid" to revert to Vivid for daytime brightness enhancement
+local BRIGHTNESS_APP = "BetterDisplay"
+
 --   delayBeforeRestart (number): The delay before restarting the application, in milliseconds (1 second = 1,000 milliseconds).
 local function killAndRestartApp(appName, delayBeforeRestart)
     delayBeforeRestart = delayBeforeRestart or 500 -- Default to 500 milliseconds if not specified
@@ -24,23 +29,23 @@ end)
 local function handleFluxState()
     log("Handle flux state")
     if isNighttime() then
-        if not isProcessRunning("Flux") then
-            log("🕯️ Flux is not running during its allowed time; starting Flux")
-            hs.execute("open -a Flux")
+        if not isProcessRunning(NIGHT_MODE_APP) then
+            log("🕯️ " .. NIGHT_MODE_APP .. " is not running during its allowed time; starting " .. NIGHT_MODE_APP)
+            hs.execute("open -a '" .. NIGHT_MODE_APP .. "'")
         end
-        killProcess("Vivid")
+        killProcess(BRIGHTNESS_APP)
     else
-        if isProcessRunning("Flux") then
-            log("🕯️ Flux is running outside its allowed time; killing Flux")
-            killProcess("Flux")
-            killAndRestartApp("Vivid") -- Restart Vivid app whenever we kill Flux
+        if isProcessRunning(NIGHT_MODE_APP) then
+            log("🕯️ " .. NIGHT_MODE_APP .. " is running outside its allowed time; killing " .. NIGHT_MODE_APP)
+            killProcess(NIGHT_MODE_APP)
+            killAndRestartApp(BRIGHTNESS_APP) -- Restart brightness app whenever we kill the night mode app
         end
     end
 end
 
-local function restartVividIfNotNighttime()
+local function restartBrightnessAppIfNotNighttime()
     if not isNighttime() then
-        killAndRestartApp("Vivid")
+        killAndRestartApp(BRIGHTNESS_APP)
     end
 end
 
@@ -48,15 +53,15 @@ local wasPrimaryDisplayBuiltIn = isPrimaryDisplayBuiltIn()
 
 local function handlePowerSourceChange()
     local isPrimaryBuiltIn = isPrimaryDisplayBuiltIn()
-    log("Power source changed; checking to see if we need to restart Vivid.", {
+    log("Power source changed; checking to see if we need to restart " .. BRIGHTNESS_APP .. ".", {
         isPrimaryBuiltIn = isPrimaryBuiltIn,
         wasPrimaryDisplayBuiltIn = wasPrimaryDisplayBuiltIn
     })
 
     if isPrimaryBuiltIn and not wasPrimaryDisplayBuiltIn then
-        log("Switched to built-in display; preparing to restart Vivid.")
+        log("Switched to built-in display; preparing to restart " .. BRIGHTNESS_APP .. ".")
         hs.timer.doAfter(2, function()
-            restartVividIfNotNighttime()
+            restartBrightnessAppIfNotNighttime()
         end)
     end
 
@@ -76,9 +81,9 @@ log("Screen watcher started", {
 })
 
 handleFluxState()
-restartVividIfNotNighttime()
+restartBrightnessAppIfNotNighttime()
 
--- Check Flux status every minute to ensure it's running or killed as per the schedule
+-- Check night mode app status every minute to ensure it's running or killed as per the schedule
 FLUX_CHECK_TIMER = hs.timer.doEvery(60, handleFluxState)
 addWakeWatcher(handleFluxState)
 
