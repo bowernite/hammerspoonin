@@ -47,7 +47,15 @@ local function handleFluxState()
         if isProcessRunning(NIGHT_MODE_APP) then
             logAction("🕯️ " .. NIGHT_MODE_APP .. " is running outside its allowed time; killing " .. NIGHT_MODE_APP)
             killProcess(NIGHT_MODE_APP)
-            killAndRestartApp(BRIGHTNESS_APP) -- Restart brightness app whenever we kill the night mode app
+            -- Now that BRIGHTNESS_APP runs at night too (see KILL_BRIGHTNESS_APP_AT_NIGHT), it's
+            -- already running at the day boundary. Don't kill+restart it: if this boundary is
+            -- crossed during a dark/maintenance wake while the screen is locked, LaunchServices
+            -- refuses to foreground the relaunch (loginwindow owns the front) and launchd tears the
+            -- service down, leaving the app dead until next login. Just ensure it's running.
+            if not isProcessRunning(BRIGHTNESS_APP) then
+                logAction("🔆 " .. NIGHT_MODE_APP .. " killed; starting " .. BRIGHTNESS_APP)
+                hs.application.open(BRIGHTNESS_APP)
+            end
         end
     end
 end
