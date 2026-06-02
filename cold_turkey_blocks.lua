@@ -15,7 +15,7 @@ local function buildStartCommand(blockName)
 end
 
 function startColdTurkeyBlock(blockName)
-  log("Starting Cold Turkey Blocker " .. blockName .. " block")
+  logAction("Starting Cold Turkey Blocker " .. blockName .. " block")
   local command = buildStartCommand(blockName)
   local output, status, type, rc = hs.execute(command, true)
 

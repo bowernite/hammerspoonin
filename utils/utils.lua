@@ -10,8 +10,17 @@ end
 
 function killProcess(processName)
   if isProcessRunning(processName) then
-    log("💀 " .. processName .. " is running; killing")
-    hs.execute("pkill -f '" .. processName .. "'")
+    logAction("💀 " .. processName .. " is running; killing")
+    local app = hs.application.get(processName)
+    if app then
+      -- Prefer the native API: targets this exact app and avoids the shell entirely.
+      app:kill()
+    else
+      -- Fallback for non-GUI processes. Match the exact process NAME (-x), never the
+      -- full command line (-f) -- `pkill -f` would kill any process that merely mentions
+      -- this name in its arguments (e.g. an editor or a `log stream` filtering on it).
+      hs.execute("pkill -x '" .. processName .. "'")
+    end
   end
 end
 

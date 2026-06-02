@@ -42,10 +42,10 @@ local function toggleWifiBasedOnEthernetAndScreenLock(screenLocked)
     log("🕒 Timestamp: " .. os.date("%c"))
     if ethernetActive and not screenLocked and wifiPower then
         hs.wifi.setPower(false, wifiInterface)
-        log("🔓 Screen Unlocked & Ethernet Connected: 📶 WiFi turned off.")
+        logAction("🔓 Screen Unlocked & Ethernet Connected: 📶 WiFi turned off.")
     elseif not ethernetActive or screenLocked and not wifiPower then
         hs.wifi.setPower(true, wifiInterface)
-        log("📶 WiFi turned on for connectivity.")
+        logAction("📶 WiFi turned on for connectivity.")
     end
 end
 

@@ -111,7 +111,7 @@ local function startColima()
           status = status
         }, output)
       else
-        log("Successfully started Colima after recovery")
+        logAction("Successfully started Colima after recovery")
       end
     else
       logError("Failed to start Colima", {
@@ -120,7 +120,7 @@ local function startColima()
       }, output)
     end
   else
-    log("Successfully started Colima")
+    logAction("Successfully started Colima")
   end
 end
 

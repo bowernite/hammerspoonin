@@ -4,7 +4,7 @@ require("boot")
 require("utils/utils")
 
 function resetApps()
-    log("Initiating app reset sequence")
+    logAction("Initiating app reset sequence")
 
     killInessentialApps()
 
@@ -15,7 +15,7 @@ end
 
 function resetAppsEveryMorning()
     local function resetAppsTask()
-        log("Resetting apps after first wake past 4 AM")
+        logAction("Resetting apps after first wake past 4 AM")
         hs.alert.show("Doing morning reset...", 10)
         hs.notify.show("Doing morning reset...", "Resetting apps", "")
         resetApps()

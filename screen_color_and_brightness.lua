@@ -22,7 +22,7 @@ local function killAndRestartApp(appName, delayBeforeRestart)
     -- Wait for the app to fully terminate before attempting to restart
     hs.timer.usleep(delayBeforeRestart * 1000) -- Convert milliseconds to microseconds
 
-    log("Starting " .. appName)
+    logAction("Starting " .. appName)
     hs.application.open(appName)
 end
 
@@ -34,18 +34,18 @@ local function handleFluxState()
     log("Handle flux state")
     if isNighttime() then
         if not isProcessRunning(NIGHT_MODE_APP) then
-            log("🕯️ " .. NIGHT_MODE_APP .. " is not running during its allowed time; starting " .. NIGHT_MODE_APP)
+            logAction("🕯️ " .. NIGHT_MODE_APP .. " is not running during its allowed time; starting " .. NIGHT_MODE_APP)
             hs.execute("open -a '" .. NIGHT_MODE_APP .. "'")
         end
         if KILL_BRIGHTNESS_APP_AT_NIGHT then
             killProcess(BRIGHTNESS_APP)
         elseif not isProcessRunning(BRIGHTNESS_APP) then
-            log("🔆 Allowing " .. BRIGHTNESS_APP .. " at night; starting " .. BRIGHTNESS_APP)
+            logAction("🔆 Allowing " .. BRIGHTNESS_APP .. " at night; starting " .. BRIGHTNESS_APP)
             hs.application.open(BRIGHTNESS_APP)
         end
     else
         if isProcessRunning(NIGHT_MODE_APP) then
-            log("🕯️ " .. NIGHT_MODE_APP .. " is running outside its allowed time; killing " .. NIGHT_MODE_APP)
+            logAction("🕯️ " .. NIGHT_MODE_APP .. " is running outside its allowed time; killing " .. NIGHT_MODE_APP)
             killProcess(NIGHT_MODE_APP)
             killAndRestartApp(BRIGHTNESS_APP) -- Restart brightness app whenever we kill the night mode app
         end

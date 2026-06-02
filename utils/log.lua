@@ -189,6 +189,17 @@ function log(message, details, styleOptions, level)
     lastLogTime = currentTime
 end
 
+-- Mirror important log lines to the macOS unified log (via `logger`) so they're
+-- discoverable with `log show` / Console even when Hammerspoon's own logfiles aren't
+-- at hand. Intentionally NOT called from the base log() -- only from the action/
+-- warning/error helpers below -- to keep high-volume debug chatter out of syslog.
+-- Query later with: log show --predicate 'eventMessage CONTAINS "hammerspoon"'
+local function logToSystem(message, priority)
+    local clean = tostring(message):gsub("[\r\n]+", " ")
+    local escaped = clean:gsub("'", "'\\''")
+    hs.execute("/usr/bin/logger -t hammerspoon -p user." .. (priority or "notice") .. " -- '" .. escaped .. "'")
+end
+
 -- Logger function for when we're going to do a concrete action (e.g. maximize a window, kill an app, etc.)
 function logAction(message, details)
     log(message, details, {
@@ -198,6 +209,7 @@ function logAction(message, details)
             blue = 0
         }
     }, 3)
+    logToSystem(message, "notice")
 end
 
 -- Logger function for errors
@@ -214,6 +226,7 @@ function logError(message, details, notificationMessage)
             blue = 0
         }
     }, 3)
+    logToSystem(message, "err")
     hs.notify.show(message or "❌ Hammerspoon error", "", notificationMessage or "")
 end
 
@@ -231,5 +244,6 @@ function logWarning(message, details)
             blue = 0
         }
     }, 3)
+    logToSystem(message, "warning")
 end
 

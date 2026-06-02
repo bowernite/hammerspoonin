@@ -73,7 +73,7 @@ function restartSystem(options)
     
     if options.reopenWindows == false then
         -- Restart without reopening windows
-        log("Restarting system without reopening windows")
+        logAction("Restarting system without reopening windows")
         
         -- First set the preferences to not reopen windows
         hs.execute([[defaults write com.apple.loginwindow TALLogoutSavesState -bool FALSE]])
@@ -83,7 +83,7 @@ function restartSystem(options)
         hs.execute([[osascript -e 'tell application "System Events" to restart' &> /dev/null &]])
     else
         -- Standard restart with default behavior (will reopen windows)
-        log("Restarting system with default behavior (will reopen windows)")
+        logAction("Restarting system with default behavior (will reopen windows)")
         
         -- First set the preferences to reopen windows
         hs.execute([[defaults write com.apple.loginwindow TALLogoutSavesState -bool TRUE]])
