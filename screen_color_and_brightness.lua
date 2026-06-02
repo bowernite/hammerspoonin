@@ -10,6 +10,10 @@ local NIGHT_MODE_APP = "Flux"
 -- Switch to "Vivid" to revert to Vivid for daytime brightness enhancement
 local BRIGHTNESS_APP = "BetterDisplay"
 
+-- Set to true to restore the old behavior of killing BRIGHTNESS_APP at night (Flux only).
+-- When false, both NIGHT_MODE_APP and BRIGHTNESS_APP are allowed to run at night.
+local KILL_BRIGHTNESS_APP_AT_NIGHT = false
+
 --   delayBeforeRestart (number): The delay before restarting the application, in milliseconds (1 second = 1,000 milliseconds).
 local function killAndRestartApp(appName, delayBeforeRestart)
     delayBeforeRestart = delayBeforeRestart or 500 -- Default to 500 milliseconds if not specified
@@ -33,7 +37,12 @@ local function handleFluxState()
             log("🕯️ " .. NIGHT_MODE_APP .. " is not running during its allowed time; starting " .. NIGHT_MODE_APP)
             hs.execute("open -a '" .. NIGHT_MODE_APP .. "'")
         end
-        killProcess(BRIGHTNESS_APP)
+        if KILL_BRIGHTNESS_APP_AT_NIGHT then
+            killProcess(BRIGHTNESS_APP)
+        elseif not isProcessRunning(BRIGHTNESS_APP) then
+            log("🔆 Allowing " .. BRIGHTNESS_APP .. " at night; starting " .. BRIGHTNESS_APP)
+            hs.application.open(BRIGHTNESS_APP)
+        end
     else
         if isProcessRunning(NIGHT_MODE_APP) then
             log("🕯️ " .. NIGHT_MODE_APP .. " is running outside its allowed time; killing " .. NIGHT_MODE_APP)
