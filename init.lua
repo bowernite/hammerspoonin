@@ -25,6 +25,8 @@ require("homebrew_autoupdate")
 -- New finder windows annoying
 -- Without this, it's just... stupid. On the other hand, when it's on it's still not bulletproof. Still going back and forth... As of now, it does still work sometimes, so it's not nothing
 require("windows/window_management")
+-- Auto-dismiss nag windows (Microsoft AutoUpdate, etc.) -- see windows/window_suppression.lua
+require("windows/window_suppression")
 require("audio_devices")
 
 ---------------------------
