@@ -27,6 +27,9 @@ require("homebrew_autoupdate")
 require("windows/window_management")
 -- Auto-dismiss nag windows (Microsoft AutoUpdate, etc.) -- see windows/window_suppression.lua
 require("windows/window_suppression")
+-- Kill nagger processes (Microsoft AutoUpdate agent) before they can even paint a window --
+-- the proactive sibling of window_suppression; each works standalone
+require("nag_process_reaper")
 require("audio_devices")
 
 ---------------------------

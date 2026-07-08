@@ -5,6 +5,11 @@ require("utils/log")
 -- the blacklist says "don't *manage* this window", whereas these rules say "actively get
 -- this window *out of my face*".
 --
+-- This is the *reactive* layer -- it acts on windows once they're on screen, so a brief
+-- flash can sneak through. Its proactive sibling is nag_process_reaper.lua, which kills
+-- known nagger processes before they can paint anything. Each works standalone; enable
+-- either or both from init.lua.
+--
 -- Matching mirrors the blacklist: `app`, `window`, and/or `bundleID` are matched
 -- case-insensitively as substrings against the window's application name, title, and
 -- bundle identifier respectively. Any fields you specify must ALL match. A rule with only
@@ -227,66 +232,3 @@ windowSuppressionWatcher:subscribe(hs.window.filter.windowCreated, windowSuppres
 windowSuppressionWatcher:subscribe(hs.window.filter.windowVisible, windowSuppressionVisibleCallback)
 
 suppressAnnoyingWindows()
-
--- ---------------------------------------------------------------------------------------
--- Proactive process reaper -- kill the nagger *before* it can paint (kills the flash)
--- ---------------------------------------------------------------------------------------
--- Everything above is *reactive*: it closes the nag once it's already on screen, so a brief
--- flash still sneaks through (you see it blink up and vanish). The reminder is painted by a
--- resident background agent -- process "Microsoft Update Assistant", bundle id
--- com.microsoft.autoupdate.fba -- an LSUIElement that launchd keeps around (via LaunchAgent
--- com.microsoft.update.agent) and wakes on a timer to check for updates; when one is pending
--- for a running app it pops the "please quit X to finish updating" nag.
---
--- Verified on this machine: killing that agent makes it stay dead for a long time -- launchd
--- has no KeepAlive for it, so it only comes back on the agent's ~2h StartInterval or an
--- on-demand XPC request. So proactively reaping it is cheap (one kill buys hours of quiet)
--- and keeps it dead ~all of the time, shrinking the window in which it can paint a nag toward
--- zero. Crucially this does NOT stop updates: the actual download/install is done by a
--- separate privileged root daemon (com.microsoft.autoupdate.helper), which here is MDM-managed
--- to AutomaticDownload. We are only silencing the reminder UI, not the updater.
---
--- We deliberately target ONLY the ".fba" reminder agent, never the main Microsoft AutoUpdate
--- app (com.microsoft.autoupdate2) you might open yourself -- so a manual "Check for Updates"
--- still works. (One caveat: if you leave MAU open updating by hand and it spawns this agent,
--- the reaper will keep killing it. That's rare and harmless -- the root daemon does the real
--- work -- but if you're mid manual-update and it fights you, reload without this file.)
---
--- Layered on purpose; any one layer would mostly do, together they're belt-and-suspenders:
---   (1) kill whatever's resident right now, at load
---   (2) kill it the instant launchd (re)launches it
---   (3) a short sweep, in case a background launch event isn't delivered to the watcher
---   (4) the reactive window-close above stays as the final net if a nag ever paints anyway
-local NAG_AGENT_BUNDLE_ID = "com.microsoft.autoupdate.fba"
-
--- A freshly-launched agent has to run its update check before it can paint, so sweeping
--- every few seconds is fast enough to catch a respawn before it nags. It's a no-op lookup
--- while the agent is dead (the common case), so a short interval costs effectively nothing.
-local NAG_REAP_INTERVAL_SECONDS = 5
-
-local function reapNagAgent()
-    for _, agent in ipairs(hs.application.applicationsForBundleID(NAG_AGENT_BUNDLE_ID)) do
-        logAction("Reaping Microsoft AutoUpdate nag agent before it can nag", {agent})
-        agent:kill()
-    end
-end
--- Exposed globally so it can be triggered manually for testing: `hs -c "reapNagAgent()"`.
-_G.reapNagAgent = reapNagAgent
-
--- (2) Kill it the moment launchd (re)starts it -- earliest possible interception.
-nagAgentWatcher = hs.application.watcher.new(function(_, event, app)
-    if not app or app:bundleID() ~= NAG_AGENT_BUNDLE_ID then
-        return
-    end
-    if event == hs.application.watcher.launched or event == hs.application.watcher.activated then
-        reapNagAgent()
-    end
-end)
-nagAgentWatcher:start()
-
--- (3) Short sweep as a safety net for launches the watcher doesn't report (launch events for
--- background LSUIElement agents aren't always delivered). Parked in _G so it isn't GC'd.
-_G.nagReaperTimer = hs.timer.doEvery(NAG_REAP_INTERVAL_SECONDS, reapNagAgent)
-
--- (1) And slay whatever's resident right now, at load.
-reapNagAgent()
