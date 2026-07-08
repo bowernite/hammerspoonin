@@ -4,3 +4,5 @@ persistence/*
 askpass.sh
 
 work/**
+
+!CLAUDE.md

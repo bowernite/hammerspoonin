@@ -1,0 +1,2 @@
+- When creating timers, especially ones that need to be longstanding / run for long periods of time, make them global (e.g. `_G.timer = hs.timer.doEvery(...)`). See existing examples in codebase
+  - This prevent garbage collection of these timers

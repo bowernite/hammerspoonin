@@ -15,9 +15,9 @@ require("utils/log")
 -- for updates; when one is pending for a running app it pops the "please quit X to finish
 -- updating" nag.
 --
--- Verified on this machine: killing that agent makes it stay dead for a long time -- launchd
--- has no KeepAlive for it, so it only comes back on the agent's ~2h StartInterval or an
--- on-demand XPC request. So proactively reaping it is cheap (one kill buys hours of quiet)
+-- Killing that agent makes it stay dead for a long time: launchd has no KeepAlive for it, so
+-- it only comes back on the agent's ~2h StartInterval or an on-demand XPC request. So
+-- proactively reaping it is cheap (one kill buys hours of quiet)
 -- and keeps it dead ~all of the time, shrinking the window in which it can paint a nag toward
 -- zero. Crucially this does NOT stop updates: the actual download/install is done by a
 -- separate privileged root daemon (com.microsoft.autoupdate.helper), which here is MDM-managed
@@ -72,8 +72,8 @@ end)
 nagProcessReaperWatcher:start()
 
 -- (2) Short sweep as a safety net for launches the watcher doesn't report (launch events for
--- background LSUIElement agents aren't always delivered). Parked in _G so it isn't GC'd.
-_G.nagProcessReaperTimer = hs.timer.doEvery(REAP_INTERVAL_SECONDS, reapNagProcesses)
+-- background LSUIElement agents aren't always delivered). Bare global so it isn't GC'd.
+NAG_PROCESS_REAPER_TIMER = hs.timer.doEvery(REAP_INTERVAL_SECONDS, reapNagProcesses)
 
 -- (3) And slay whatever's resident right now, at load.
 reapNagProcesses()
