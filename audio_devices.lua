@@ -10,7 +10,6 @@ require("utils/screen_utils")
 -- List of input devices, in priority order
 -- De-duplicated and added MacBook Pro Microphone as last fallback
 local preferredInputDevices = {
-    "🎧 Bose",
     -- "Wave Link Stream",            -- Only if Elgato USB present
     "Elgato Wave:3",
     "C922 Pro Stream Webcam",
