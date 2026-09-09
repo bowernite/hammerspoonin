@@ -37,6 +37,12 @@ SUPPRESS_RULES = {{
     -- escalates to hide -> minimize if a close ever fails to make it go away.
     bundleID = "com.microsoft.autoupdate",
     action = "close"
+}, {
+    -- Real windows from SoftwareUpdateNotificationManager, if it ever paints one.
+    -- Notification Center *banners* from the same process are not hs.window objects --
+    -- those are handled by macos_update_nags.lua.
+    bundleID = "com.apple.SoftwareUpdateNotificationManager",
+    action = "close"
 }}
 
 -- ---------------------------------------------------------------------------------------
