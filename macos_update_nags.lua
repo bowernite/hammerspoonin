@@ -1,7 +1,8 @@
 require("utils/log")
 
 -- Dismiss Notification Center banners about macOS system updates (e.g. "A system
--- update is required", "A system update will be installed tonight", "Updates Available").
+-- update is required", "A system update will be installed tonight", "Updates Available",
+-- Jamf "Managed Update" / "An update to macOS X.Y has been scheduled").
 --
 -- This is NOT a copy of nag_process_reaper.lua. Those Microsoft nags are real windows
 -- from a user-level agent we can kill. These nags are Notification Center banners from
@@ -21,7 +22,7 @@ require("utils/log")
 
 local UPDATE_NAG_NEEDLES = {"system update", "software update", "macos update", "mac os update",
                             "will be installed tonight", "update is required", "updates available",
-                            "restart is required to install"}
+                            "restart is required to install", "managed update", "update to macos"}
 
 local SUBROLE_PREFIX = "AXNotificationCenter"
 local NC_BUNDLE_ID = "com.apple.notificationcenterui"
