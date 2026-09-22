@@ -1,8 +1,12 @@
 require("utils/log")
 
--- Dismiss Notification Center banners about macOS system updates (e.g. "A system
--- update is required", "A system update will be installed tonight", "Updates Available",
--- Jamf "Managed Update" / "An update to macOS X.Y has been scheduled").
+-- Dismiss nag banners in Notification Center:
+--   * macOS system updates (e.g. "A system update is required", "Updates Available", Jamf
+--     "Managed Update" / "An update to macOS X.Y has been scheduled")
+--   * Background Task Management ("App Background Activity: "watchman" can run in the
+--     background"). macOS re-posts it every time a launch agent's binary changes (e.g. each
+--     `brew upgrade`), and it has no toggle in System Settings. It's also muted at the source
+--     (see muteBackgroundActivityNotifications), so the sweep is just the fallback for it
 --
 -- This is NOT a copy of nag_process_reaper.lua. Those Microsoft nags are real windows
 -- from a user-level agent we can kill. These nags are Notification Center banners from
@@ -18,21 +22,28 @@ require("utils/log")
 -- https://github.com/alfredapp/banner-be-gone-workflow
 --
 -- Unlike Banner Be Gone we do not clear every banner -- only ones whose visible text
--- looks like a Software Update nag.
+-- matches a nag above.
 
 local UPDATE_NAG_NEEDLES = {"system update", "software update", "macos update", "mac os update",
                             "will be installed tonight", "update is required", "updates available",
                             "restart is required to install", "managed update", "update to macos"}
+local BACKGROUND_ACTIVITY_NAG_NEEDLES = {"can run in the background", "app background activity",
+                                         "background items added"}
+local NAG_NEEDLES = hs.fnutils.concat(hs.fnutils.copy(UPDATE_NAG_NEEDLES), BACKGROUND_ACTIVITY_NAG_NEEDLES)
 
 local SUBROLE_PREFIX = "AXNotificationCenter"
 local NC_BUNDLE_ID = "com.apple.notificationcenterui"
-local SWEEP_INTERVAL_SECONDS = 3
+local SWEEP_INTERVAL_SECONDS = 0.5
 local MAX_DISMISS_PER_SWEEP = 8
 local MAX_WALK_DEPTH = 12
 
+local BTM_NOTIFICATION_BUNDLE_ID = "com.apple.BTMNotificationAgent"
+-- 0x08 = Banners, 0x10 = Alerts, neither = None
+local ALERT_STYLE_BITS = 0x18
+
 local function containsNeedle(haystack)
     local lower = string.lower(haystack)
-    for _, needle in ipairs(UPDATE_NAG_NEEDLES) do
+    for _, needle in ipairs(NAG_NEEDLES) do
         if string.find(lower, needle, 1, true) then
             return true
         end
@@ -98,8 +109,8 @@ local function notificationCenterApp()
     return apps and apps[1] or nil
 end
 
--- Exposed globally so it can be triggered manually: `hs -c "dismissMacOSUpdateNotifications()"`.
-function dismissMacOSUpdateNotifications()
+-- Exposed globally so it can be triggered manually: `hs -c "dismissNotificationNags()"`.
+function dismissNotificationNags()
     local app = notificationCenterApp()
     if not app then
         return
@@ -128,12 +139,33 @@ function dismissMacOSUpdateNotifications()
         if not actions or #actions == 0 then
             return
         end
-        logAction("Dismissing macOS update notification", {text})
+        logAction("Dismissing nag notification", {text})
         nag:performAction(actions[#actions])
         -- Tree mutates after a Close; re-read windows for the next pass.
         windows = appElement:attributeValue("AXWindows") or {}
     end
 end
 
-MACOS_UPDATE_NAG_TIMER = hs.timer.doEvery(SWEEP_INTERVAL_SECONDS, dismissMacOSUpdateNotifications)
-dismissMacOSUpdateNotifications()
+-- Sets the Background Task Management sender's alert style to None, so its notifications only land in
+-- Notification Center's list. Settings hides this sender, so we edit its ncprefs entry directly. Runs on
+-- every load because macOS updates (which reboot, reloading us) can reset it
+function muteBackgroundActivityNotifications()
+    local exportPath = os.tmpname()
+    hs.execute(string.format("defaults export com.apple.ncprefs %q", exportPath))
+    local apps = (hs.plist.read(exportPath) or {}).apps or {}
+    for index, app in ipairs(apps) do
+        local isBtmSender = app["bundle-id"] == BTM_NOTIFICATION_BUNDLE_ID
+        if isBtmSender and (app.flags & ALERT_STYLE_BITS) ~= 0 then
+            local plutilIndex = index - 1
+            hs.execute(string.format(
+                "plutil -replace apps.%d.flags -integer %d %q && defaults import com.apple.ncprefs %q && killall usernoted",
+                plutilIndex, app.flags & ~ALERT_STYLE_BITS, exportPath, exportPath))
+            logAction("Muted App Background Activity notifications", {previousFlags = app.flags})
+        end
+    end
+    os.remove(exportPath)
+end
+
+NOTIFICATION_NAG_TIMER = hs.timer.doEvery(SWEEP_INTERVAL_SECONDS, dismissNotificationNags)
+muteBackgroundActivityNotifications()
+dismissNotificationNags()
