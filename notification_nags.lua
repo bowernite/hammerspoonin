@@ -5,8 +5,8 @@ require("utils/log")
 --     "Managed Update" / "An update to macOS X.Y has been scheduled")
 --   * Background Task Management ("App Background Activity: "watchman" can run in the
 --     background"). macOS re-posts it every time a launch agent's binary changes (e.g. each
---     `brew upgrade`), and it has no toggle in System Settings. It's also muted at the source
---     (see muteBackgroundActivityNotifications), so the sweep is just the fallback for it
+--     `brew upgrade`). Muting its sender (com.apple.BTMNotificationAgent) in ncprefs doesn't
+--     work -- it's hidden from System Settings and posts regardless of style / allow flags
 --
 -- This is NOT a copy of nag_process_reaper.lua. Those Microsoft nags are real windows
 -- from a user-level agent we can kill. These nags are Notification Center banners from
@@ -36,10 +36,6 @@ local NC_BUNDLE_ID = "com.apple.notificationcenterui"
 local SWEEP_INTERVAL_SECONDS = 0.5
 local MAX_DISMISS_PER_SWEEP = 8
 local MAX_WALK_DEPTH = 12
-
-local BTM_NOTIFICATION_BUNDLE_ID = "com.apple.BTMNotificationAgent"
--- 0x08 = Banners, 0x10 = Alerts, neither = None
-local ALERT_STYLE_BITS = 0x18
 
 local function containsNeedle(haystack)
     local lower = string.lower(haystack)
@@ -146,26 +142,5 @@ function dismissNotificationNags()
     end
 end
 
--- Sets the Background Task Management sender's alert style to None, so its notifications only land in
--- Notification Center's list. Settings hides this sender, so we edit its ncprefs entry directly. Runs on
--- every load because macOS updates (which reboot, reloading us) can reset it
-function muteBackgroundActivityNotifications()
-    local exportPath = os.tmpname()
-    hs.execute(string.format("defaults export com.apple.ncprefs %q", exportPath))
-    local apps = (hs.plist.read(exportPath) or {}).apps or {}
-    for index, app in ipairs(apps) do
-        local isBtmSender = app["bundle-id"] == BTM_NOTIFICATION_BUNDLE_ID
-        if isBtmSender and (app.flags & ALERT_STYLE_BITS) ~= 0 then
-            local plutilIndex = index - 1
-            hs.execute(string.format(
-                "plutil -replace apps.%d.flags -integer %d %q && defaults import com.apple.ncprefs %q && killall usernoted",
-                plutilIndex, app.flags & ~ALERT_STYLE_BITS, exportPath, exportPath))
-            logAction("Muted App Background Activity notifications", {previousFlags = app.flags})
-        end
-    end
-    os.remove(exportPath)
-end
-
 NOTIFICATION_NAG_TIMER = hs.timer.doEvery(SWEEP_INTERVAL_SECONDS, dismissNotificationNags)
-muteBackgroundActivityNotifications()
 dismissNotificationNags()
