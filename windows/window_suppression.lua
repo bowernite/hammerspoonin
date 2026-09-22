@@ -40,7 +40,7 @@ SUPPRESS_RULES = {{
 }, {
     -- Real windows from SoftwareUpdateNotificationManager, if it ever paints one.
     -- Notification Center *banners* from the same process are not hs.window objects --
-    -- those are handled by macos_update_nags.lua.
+    -- those are handled by notification_nags.lua.
     bundleID = "com.apple.SoftwareUpdateNotificationManager",
     action = "close"
 }}

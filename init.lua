@@ -30,9 +30,9 @@ require("windows/window_suppression")
 -- Kill nagger processes (Microsoft AutoUpdate agent) before they can even paint a window --
 -- the proactive sibling of window_suppression; each works standalone
 require("nag_process_reaper")
--- Close Notification Center banners about macOS system updates (not windows -- see
--- macos_update_nags.lua). Does not stop softwareupdated / Jamf DDM from installing.
-require("macos_update_nags")
+-- Close nag banners in Notification Center (macOS updates, "can run in the background").
+-- These aren't windows -- see notification_nags.lua
+require("notification_nags")
 require("audio_devices")
 
 ---------------------------
