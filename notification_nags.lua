@@ -1,4 +1,5 @@
 require("utils/log")
+local config = require("config")
 
 -- Dismiss nag banners in Notification Center:
 --   * macOS system updates (e.g. "A system update is required", "Updates Available", Jamf
@@ -30,6 +31,7 @@ local UPDATE_NAG_NEEDLES = {"system update", "software update", "macos update", 
 local BACKGROUND_ACTIVITY_NAG_NEEDLES = {"can run in the background", "app background activity",
                                          "background items added"}
 local NAG_NEEDLES = hs.fnutils.concat(hs.fnutils.copy(UPDATE_NAG_NEEDLES), BACKGROUND_ACTIVITY_NAG_NEEDLES)
+NAG_NEEDLES = hs.fnutils.concat(NAG_NEEDLES, config.extraNagNeedles)
 
 local SUBROLE_PREFIX = "AXNotificationCenter"
 local NC_BUNDLE_ID = "com.apple.notificationcenterui"

@@ -4,6 +4,7 @@ require("utils/log")
 -- General things we want to do when macOS boots
 
 local network = require("utils/network")
+local config = require("config")
 
 -- Set up persistence for tracking actual system boots
 local BOOT_STATE_KEY = "last_system_boot_time"
@@ -220,7 +221,9 @@ hs.settings.set("hs_last_reload", hs.timer.secondsSinceEpoch())
 -- Only run boot startup sequence if this is an actual system boot
 if isActualSystemBoot() then
   logAction("Running boot startup sequence")
-  startColima()
+  if config.startColimaOnBoot then
+    startColima()
+  end
 
   -- Show alert and hide all windows
   hs.alert.show("System booted - hiding all windows")

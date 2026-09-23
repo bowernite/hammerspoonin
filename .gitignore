@@ -2,6 +2,7 @@
 logs/*
 persistence/*
 askpass.sh
+local.lua
 
 work/**
 

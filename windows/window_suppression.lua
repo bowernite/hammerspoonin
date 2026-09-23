@@ -1,4 +1,5 @@
 require("utils/log")
+local config = require("config")
 
 -- Auto-dismiss nag windows the moment they appear (Microsoft AutoUpdate "a new version
 -- of Teams/Outlook is available", etc.). This is the inverse of window_blacklist.lua:
@@ -44,6 +45,10 @@ SUPPRESS_RULES = {{
     bundleID = "com.apple.SoftwareUpdateNotificationManager",
     action = "close"
 }}
+
+for _, rule in ipairs(config.extraSuppressRules) do
+    table.insert(SUPPRESS_RULES, rule)
+end
 
 -- ---------------------------------------------------------------------------------------
 -- Candidates considered but intentionally NOT enabled. They're parked here (fully

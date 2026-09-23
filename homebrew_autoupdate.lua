@@ -4,6 +4,7 @@
 require("utils/log")
 require("utils/log")
 local network = require("utils/network")
+local config = require("config")
 
 local brewCommand = "/opt/homebrew/bin/brew"
 local askpassPath = os.getenv("HOME") .. "/src/personal/hammerspoon/askpass.sh"
@@ -17,14 +18,14 @@ local function extractBrewError(output)
     return nil
 end
 
--- Runs a brew command asynchronously via hs.task (off the main Lua thread) so
--- Hammerspoon stays responsive. `callback` is invoked with the combined
--- stdout/stderr output when the command finishes, mirroring the string that the
--- old synchronous io.popen implementation returned.
-local function executeBrewCommand(command, description, callback, env)
-    log("Running: " .. command)
+-- Runs an arbitrary shell command asynchronously via hs.task (off the main Lua thread) so
+-- Hammerspoon stays responsive. `callback` is invoked with the combined stdout/stderr output
+-- when the command finishes. Env vars are `export`ed (not just prefixed) so they apply to the
+-- WHOLE shell -- important for multi-command pipelines like the cask-upgrade step below, where
+-- the env must reach the `brew upgrade` at the end of the pipe, not just the first command.
+local function executeShellCommand(shellCommand, description, callback, env)
+    log("Running: " .. (description or shellCommand))
 
-    local envPrefix = ""
     -- Default environment variables for all brew commands
     local defaultEnv = {
         SUDO_ASKPASS = askpassPath,
@@ -38,15 +39,15 @@ local function executeBrewCommand(command, description, callback, env)
         end
     end
 
-    -- Build env prefix
+    -- Build export statements
+    local exports = ""
     for key, value in pairs(defaultEnv) do
-        envPrefix = envPrefix .. key .. "=" .. value .. " "
+        exports = exports .. "export " .. key .. "='" .. value .. "'; "
     end
 
-    -- 2>&1 merges stderr into stdout so the callback receives the full output,
-    -- matching the previous behavior. Running through bash preserves the env
-    -- prefix while inheriting Hammerspoon's environment (PATH, etc.).
-    local fullCommand = envPrefix .. brewCommand .. " " .. command .. " 2>&1"
+    -- 2>&1 merges stderr into stdout so the callback receives the full output. Running through
+    -- bash inherits Hammerspoon's environment (PATH, etc.).
+    local fullCommand = exports .. shellCommand .. " 2>&1"
 
     local task = hs.task.new("/bin/bash", function(_exitCode, stdOut, _stdErr)
         local result = stdOut or ""
@@ -55,6 +56,11 @@ local function executeBrewCommand(command, description, callback, env)
     end, {"-c", fullCommand})
 
     task:start()
+end
+
+-- Convenience wrapper for the common case of running a single `brew <subcommand>`.
+local function executeBrewCommand(command, description, callback, env)
+    executeShellCommand(brewCommand .. " " .. command, description, callback, env)
 end
 
 local function isUpdateSuccessful(result)
@@ -100,10 +106,37 @@ function updateHomebrew()
         end)
     end
 
+    -- Safety net: relaunch any app that brew quit during a cask upgrade. Brew logs
+    -- "Quitting application 'bundle.id'..." for each running app it quits and never
+    -- relaunches them; a quit line implies the app was running, so relaunching restores the
+    -- pre-upgrade state. Runs on failures too -- the quit happens BEFORE the install step,
+    -- so a failed upgrade (e.g. non-writable /Applications) otherwise leaves the app dead.
+    local function relaunchAppsQuitByBrew(brewOutput)
+        for bundleID in brewOutput:gmatch("Quitting application '([^']+)'") do
+            logAction("Relaunching app that brew quit during cask upgrade: " .. bundleID)
+            hs.application.launchOrFocusByBundleID(bundleID)
+        end
+    end
+
+    local function caskUpgradeShell()
+        local skipCasks = config.skipUpgradeCasks
+        if #skipCasks == 0 then
+            return brewCommand .. " upgrade --cask --greedy", "Running cask upgrades..."
+        end
+
+        -- An unguarded `brew upgrade --cask` with no names upgrades every outdated cask.
+        local skipPattern = "^(" .. table.concat(skipCasks, "|") .. ")$"
+        local command = "outdated=$(" .. brewCommand .. " outdated --cask --quiet | grep -vxE '" ..
+                            skipPattern .. "'); " .. "if [ -n \"$outdated\" ]; then " .. brewCommand ..
+                            " upgrade --cask $outdated; " ..
+                            "else echo 'No non-skip-listed casks to upgrade'; fi"
+        return command, "Running cask upgrades (excluding skip-listed apps)..."
+    end
+
     local function runCaskUpgrade()
-        -- Upgrade casks without sudo for brew itself
-        -- --greedy lets us update casks that have some flag that says "I'll update myself"
-        executeBrewCommand("upgrade --cask --greedy", "Running cask upgrades...", function(caskResult)
+        local command, description = caskUpgradeShell()
+        executeShellCommand(command, description, function(caskResult)
+            relaunchAppsQuitByBrew(caskResult)
             if not isCommandSuccessful(caskResult) then
                 if network.isConnectivityError(caskResult) then
                     log("Homebrew cask upgrade skipped due to connectivity issues")
@@ -132,7 +165,9 @@ function updateHomebrew()
     end
 
     local function runFormulaUpgrade()
-        executeBrewCommand("upgrade --greedy", "Running brew upgrade...", function(upgradeResult)
+        -- --formula scopes this to formulae only. A bare `brew upgrade` also upgrades
+        -- outdated casks (quitting their apps). Cask upgrades run in the next step.
+        executeBrewCommand("upgrade --formula", "Running brew upgrade...", function(upgradeResult)
             if not isCommandSuccessful(upgradeResult) then
                 if network.isConnectivityError(upgradeResult) then
                     log("Homebrew formula upgrade skipped due to connectivity issues")
