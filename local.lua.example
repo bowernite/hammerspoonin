@@ -7,7 +7,7 @@ return {
     --     {
     --         bundleID = "com.jamf.connect",
     --         window = "Please sign in using your IG Credentials",
-    --         action = "close"
+    --         action = "hide"
     --     }
     -- }
 }

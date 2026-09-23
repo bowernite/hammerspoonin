@@ -242,4 +242,25 @@ end
 windowSuppressionWatcher:subscribe(hs.window.filter.windowCreated, windowSuppressionCreatedCallback)
 windowSuppressionWatcher:subscribe(hs.window.filter.windowVisible, windowSuppressionVisibleCallback)
 
+-- Some matching apps never enter the window filter, so windowVisible never fires
+local function suppressVisibleHideRules()
+    for _, rule in ipairs(SUPPRESS_RULES) do
+        if rule.action == "hide" and rule.bundleID then
+            local app = hs.application.get(rule.bundleID)
+            if app and not app:isHidden() then
+                for _, window in ipairs(app:allWindows()) do
+                    if window:isVisible() and ruleMatchesWindow(rule, window) then
+                        logAction("Suppressing window: hiding app", {window})
+                        app:hide()
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
+
+WINDOW_SUPPRESSION_SWEEP_TIMER = hs.timer.doEvery(0.5, suppressVisibleHideRules)
+
 suppressAnnoyingWindows()
+suppressVisibleHideRules()
