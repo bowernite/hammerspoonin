@@ -1,0 +1,13 @@
+-- Copy to local.lua. That file is gitignored. Omitted keys keep the defaults in config.lua.
+return {
+    -- startColimaOnBoot = false,
+    -- skipUpgradeCasks = { "alfred", "kitty" },
+    -- extraNagNeedles = { "your local password is incorrect" },
+    -- extraSuppressRules = {
+    --     {
+    --         bundleID = "com.jamf.connect",
+    --         window = "Please sign in using your IG Credentials",
+    --         action = "close"
+    --     }
+    -- }
+}
